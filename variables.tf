@@ -1,0 +1,157 @@
+variable "project_id" {
+  description = "The GCP project ID"
+  type        = string
+}
+
+variable "region" {
+  description = "The GCP region"
+  type        = string
+  default     = "us-central1"
+}
+
+# --- Feature Flags ---
+
+variable "enable_gke" {
+  description = "Enable GKE cluster creation"
+  type        = bool
+  default     = false
+}
+
+variable "enable_gke_internals" {
+  description = "Deploy internal GKE resources (like namespaces). Requires enable_gke = true."
+  type        = bool
+  default     = false
+}
+
+variable "enable_helm" {
+  description = "Deploy Helm charts to GKE. Requires enable_gke = true."
+  type        = bool
+  default     = false
+}
+
+variable "enable_lb" {
+  description = "Enable Load Balancer creation (requires enable_gke = true)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_app_vm" {
+  type    = bool
+  default = false
+}
+
+variable "enable_db_vm" {
+  type    = bool
+  default = false
+}
+
+variable "enable_rmq_vm" {
+  type    = bool
+  default = false
+}
+
+variable "enable_redis_vm" {
+  type    = bool
+  default = false
+}
+
+variable "enable_monitoring_vm" {
+  type    = bool
+  default = false
+}
+
+variable "enable_gitlab_vm" {
+  type    = bool
+  default = false
+}
+
+variable "enable_gitlab_runner_vm" {
+  type    = bool
+  default = false
+}
+
+# --- Environment Specifics ---
+
+variable "vpc_name" {
+  type    = string
+  default = "main-vpc"
+}
+
+variable "zone" {
+  description = "The specific GCP zone to deploy resources in"
+  type        = string
+  default     = "us-central1-a"
+}
+
+# VM Types
+variable "vm_types" {
+  description = "Map of VM names to machine types"
+  type        = map(string)
+  default = {
+    app             = "e2-micro"
+    db              = "e2-micro"
+    rmq             = "e2-micro"
+    redis           = "e2-micro"
+    monitoring      = "e2-micro"
+    gitlab          = "e2-micro"
+    gitlab_runner   = "e2-micro"
+  }
+}
+
+variable "ubuntu_image" {
+  type    = string
+  default = "ubuntu-os-cloud/ubuntu-2204-lts"
+}
+
+# GKE Params
+variable "gke_cluster_name" {
+  description = "The name of the primary GKE cluster"
+  type        = string
+  default     = "primary-cluster"
+}
+
+variable "gke_default_pool_env_label" {
+  type    = string
+  default = "default"
+}
+
+variable "gke_apps_pool_env_label" {
+  type    = string
+  default = "app"
+}
+
+variable "gke_default_pool_machine_type" {
+  type    = string
+  default = "e2-micro"
+}
+
+variable "gke_apps_pool_machine_type" {
+  type    = string
+  default = "e2-micro"
+}
+
+variable "app_namespace" {
+  description = "The name of the Kubernetes namespace for the application"
+  type        = string
+  default     = "app-namespace"
+}
+
+variable "gke_default_pool_min_count" {
+  type    = number
+  default = 1
+}
+
+variable "gke_default_pool_max_count" {
+  type    = number
+  default = 3
+}
+
+variable "gke_apps_pool_min_count" {
+  type    = number
+  default = 1
+}
+
+variable "gke_apps_pool_max_count" {
+  type    = number
+  default = 5
+}

@@ -1,0 +1,44 @@
+resource "kubernetes_namespace" "app_ns" {
+  # Only create if both the GKE cluster itself, and the internal deployments feature are enabled.
+  count = var.enable_gke && var.enable_gke_internals ? 1 : 0
+
+  metadata {
+    name = var.app_namespace
+    
+    labels = {
+      managed-by = "terraform"
+    }
+  }
+}
+
+resource "kubernetes_service" "app_svc" {
+  count = var.enable_gke && var.enable_gke_internals ? 1 : 0
+
+  metadata {
+    name      = "app-backend-svc"
+    namespace = kubernetes_namespace.app_ns[0].metadata[0].name
+    
+    # This annotation provisions the standalone zonal NEG automatically via GKE
+    annotations = {
+      "cloud.google.com/neg" = jsonencode({
+        "exposed_ports" = {
+          "80" = { "name" = "app-backend-neg" }
+        }
+      })
+    }
+  }
+
+  spec {
+    # This selector assumes your helm chart or pod deployment will use the label app=my-app.
+    selector = {
+      app = "my-app"
+    }
+
+    port {
+      port        = 80
+      target_port = 8080
+    }
+
+    type = "ClusterIP"
+  }
+}
