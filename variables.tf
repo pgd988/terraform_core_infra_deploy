@@ -35,6 +35,20 @@ variable "enable_lb" {
   default     = false
 }
 
+# --- LB Params ---
+
+variable "lb_health_check_port" {
+  description = "The TCP port used for the LB health check"
+  type        = number
+  default     = 80
+}
+
+variable "lb_cert_trigger" {
+  description = "Change this value (e.g. increase integer) to force a regeneration of the self-signed SSL certificate"
+  type        = string
+  default     = "1"
+}
+
 variable "enable_app_vm" {
   type    = bool
   default = false

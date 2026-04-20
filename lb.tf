@@ -13,8 +13,9 @@ resource "tls_self_signed_cert" "lb_cert" {
   private_key_pem = tls_private_key.lb_key[0].private_key_pem
 
   subject {
-    common_name  = "example.com" # Replace or parameterize
-    organization = "Demo App"
+    common_name         = "example.com" # Replace or parameterize
+    organization        = "Demo App"
+    organizational_unit = var.lb_cert_trigger
   }
 
   validity_period_hours = 8760
@@ -53,7 +54,7 @@ resource "google_compute_health_check" "tcp_health_check" {
   timeout_sec        = 5
   
   tcp_health_check {
-    port = 80
+    port = var.lb_health_check_port
   }
 }
 
