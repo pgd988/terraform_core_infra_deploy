@@ -9,10 +9,9 @@ resource "google_compute_firewall" "allow_lb_health_check" {
   }
 
   source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
-  target_tags   = ["lb-backend"]
 }
 
-# DB Intgress firewall rule (allow specific tagged instances to talk to DB)
+# DB Ingress firewall rule (allow internal network to talk to DB)
 resource "google_compute_firewall" "db_ingress" {
   name    = "allow-db-ingress"
   network = google_compute_network.vpc.name
@@ -22,8 +21,8 @@ resource "google_compute_firewall" "db_ingress" {
     ports    = ["5432", "3306", "27017"] # Common DB ports
   }
 
-  source_tags = ["app"]
-  target_tags = ["db"]
+  source_ranges = ["10.0.0.0/8"]
+  target_tags   = ["db"]
 }
 
 # Allow SSH ingress

@@ -29,14 +29,26 @@ vm_types = {
   gitlab_runner = "e2-standard-4"
 }
 
+vm_boot_disk_sizes = {
+  app           = 20
+  db            = 50
+  rmq           = 20
+  redis         = 20
+  monitoring    = 30
+  gitlab        = 100
+  gitlab_runner = 50
+}
+
 # GKE parameters
-gke_default_pool_env_label    = "default"
-gke_apps_pool_env_label       = "app"
+gke_default_pool_env_label = "default"
+gke_apps_pool_env_label    = "app"
 
 gke_default_pool_machine_type = "e2-standard-2"
+gke_default_pool_disk_size    = 50
 gke_default_pool_min_count    = 1
 gke_default_pool_max_count    = 2
 
 gke_apps_pool_machine_type = "e2-standard-4"
+gke_apps_pool_disk_size    = 100
 gke_apps_pool_min_count    = 0
 gke_apps_pool_max_count    = 2

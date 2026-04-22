@@ -7,17 +7,18 @@ resource "google_compute_address" "app_static_ip" {
 
 # --- App VM ---
 resource "google_compute_instance" "app_vm" {
-  count        = var.enable_app_vm ? 1 : 0
-  name         = "app-vm"
-  machine_type = var.vm_types["app"]
+  count               = var.enable_app_vm ? 1 : 0
+  name                = "app-vm"
+  machine_type        = var.vm_types["app"]
   zone                = var.zone
   deletion_protection = true
-  
-  tags = ["ssh-allow", "app", "lb-backend"]
+
+  tags = ["ssh-allow", "app"]
 
   boot_disk {
     initialize_params {
       image = var.ubuntu_image
+      size  = var.vm_boot_disk_sizes["app"]
     }
   }
 
@@ -31,9 +32,9 @@ resource "google_compute_instance" "app_vm" {
 
 # --- DB VM ---
 resource "google_compute_instance" "db_vm" {
-  count        = var.enable_db_vm ? 1 : 0
-  name         = "db-vm"
-  machine_type = var.vm_types["db"]
+  count               = var.enable_db_vm ? 1 : 0
+  name                = "db-vm"
+  machine_type        = var.vm_types["db"]
   zone                = var.zone
   deletion_protection = true
 
@@ -42,6 +43,7 @@ resource "google_compute_instance" "db_vm" {
   boot_disk {
     initialize_params {
       image = var.ubuntu_image
+      size  = var.vm_boot_disk_sizes["db"]
     }
   }
 
@@ -55,9 +57,9 @@ resource "google_compute_instance" "db_vm" {
 
 # --- RMQ VM ---
 resource "google_compute_instance" "rmq_vm" {
-  count        = var.enable_rmq_vm ? 1 : 0
-  name         = "rmq-vm"
-  machine_type = var.vm_types["rmq"]
+  count               = var.enable_rmq_vm ? 1 : 0
+  name                = "rmq-vm"
+  machine_type        = var.vm_types["rmq"]
   zone                = var.zone
   deletion_protection = true
 
@@ -66,6 +68,7 @@ resource "google_compute_instance" "rmq_vm" {
   boot_disk {
     initialize_params {
       image = var.ubuntu_image
+      size  = var.vm_boot_disk_sizes["rmq"]
     }
   }
 
@@ -77,9 +80,9 @@ resource "google_compute_instance" "rmq_vm" {
 
 # --- Redis VM ---
 resource "google_compute_instance" "redis_vm" {
-  count        = var.enable_redis_vm ? 1 : 0
-  name         = "redis-vm"
-  machine_type = var.vm_types["redis"]
+  count               = var.enable_redis_vm ? 1 : 0
+  name                = "redis-vm"
+  machine_type        = var.vm_types["redis"]
   zone                = var.zone
   deletion_protection = true
 
@@ -88,6 +91,7 @@ resource "google_compute_instance" "redis_vm" {
   boot_disk {
     initialize_params {
       image = var.ubuntu_image
+      size  = var.vm_boot_disk_sizes["redis"]
     }
   }
 
@@ -99,9 +103,9 @@ resource "google_compute_instance" "redis_vm" {
 
 # --- Monitoring VM ---
 resource "google_compute_instance" "monitoring_vm" {
-  count        = var.enable_monitoring_vm ? 1 : 0
-  name         = "monitoring-vm"
-  machine_type = var.vm_types["monitoring"]
+  count               = var.enable_monitoring_vm ? 1 : 0
+  name                = "monitoring-vm"
+  machine_type        = var.vm_types["monitoring"]
   zone                = var.zone
   deletion_protection = true
 
@@ -110,6 +114,7 @@ resource "google_compute_instance" "monitoring_vm" {
   boot_disk {
     initialize_params {
       image = var.ubuntu_image
+      size  = var.vm_boot_disk_sizes["monitoring"]
     }
   }
 
@@ -121,9 +126,9 @@ resource "google_compute_instance" "monitoring_vm" {
 
 # --- GitLab VM ---
 resource "google_compute_instance" "gitlab_vm" {
-  count        = var.enable_gitlab_vm ? 1 : 0
-  name         = "gitlab-vm"
-  machine_type = var.vm_types["gitlab"]
+  count               = var.enable_gitlab_vm ? 1 : 0
+  name                = "gitlab-vm"
+  machine_type        = var.vm_types["gitlab"]
   zone                = var.zone
   deletion_protection = true
 
@@ -132,6 +137,7 @@ resource "google_compute_instance" "gitlab_vm" {
   boot_disk {
     initialize_params {
       image = var.ubuntu_image
+      size  = var.vm_boot_disk_sizes["gitlab"]
     }
   }
 
@@ -143,9 +149,9 @@ resource "google_compute_instance" "gitlab_vm" {
 
 # --- GitLab Runner VM ---
 resource "google_compute_instance" "gitlab_runner_vm" {
-  count        = var.enable_gitlab_runner_vm ? 1 : 0
-  name         = "gitlab-runner-vm"
-  machine_type = var.vm_types["gitlab_runner"]
+  count               = var.enable_gitlab_runner_vm ? 1 : 0
+  name                = "gitlab-runner-vm"
+  machine_type        = var.vm_types["gitlab_runner"]
   zone                = var.zone
   deletion_protection = true
 
@@ -154,6 +160,7 @@ resource "google_compute_instance" "gitlab_runner_vm" {
   boot_disk {
     initialize_params {
       image = var.ubuntu_image
+      size  = var.vm_boot_disk_sizes["gitlab_runner"]
     }
   }
 

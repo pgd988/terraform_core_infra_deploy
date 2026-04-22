@@ -102,13 +102,27 @@ variable "vm_types" {
   description = "Map of VM names to machine types"
   type        = map(string)
   default = {
-    app             = "e2-micro"
-    db              = "e2-micro"
-    rmq             = "e2-micro"
-    redis           = "e2-micro"
-    monitoring      = "e2-micro"
-    gitlab          = "e2-micro"
-    gitlab_runner   = "e2-micro"
+    app           = "e2-micro"
+    db            = "e2-micro"
+    rmq           = "e2-micro"
+    redis         = "e2-micro"
+    monitoring    = "e2-micro"
+    gitlab        = "e2-micro"
+    gitlab_runner = "e2-micro"
+  }
+}
+
+variable "vm_boot_disk_sizes" {
+  description = "Map of VM names to boot disk sizes in GB"
+  type        = map(number)
+  default = {
+    app           = 20
+    db            = 50
+    rmq           = 20
+    redis         = 20
+    monitoring    = 30
+    gitlab        = 50
+    gitlab_runner = 30
   }
 }
 
@@ -139,9 +153,19 @@ variable "gke_default_pool_machine_type" {
   default = "e2-micro"
 }
 
+variable "gke_default_pool_disk_size" {
+  type    = number
+  default = 50
+}
+
 variable "gke_apps_pool_machine_type" {
   type    = string
   default = "e2-micro"
+}
+
+variable "gke_apps_pool_disk_size" {
+  type    = number
+  default = 50
 }
 
 variable "app_namespace" {

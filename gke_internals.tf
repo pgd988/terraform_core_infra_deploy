@@ -4,7 +4,7 @@ resource "kubernetes_namespace" "app_ns" {
 
   metadata {
     name = var.app_namespace
-    
+
     labels = {
       managed-by = "terraform"
     }
@@ -17,7 +17,7 @@ resource "kubernetes_service" "app_svc" {
   metadata {
     name      = "app-backend-svc"
     namespace = kubernetes_namespace.app_ns[0].metadata[0].name
-    
+
     # This annotation provisions the standalone zonal NEG automatically via GKE
     annotations = {
       "cloud.google.com/neg" = jsonencode({

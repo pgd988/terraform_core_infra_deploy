@@ -52,7 +52,7 @@ resource "google_compute_health_check" "tcp_health_check" {
   name               = "gke-app-tcp-health-check"
   check_interval_sec = 5
   timeout_sec        = 5
-  
+
   tcp_health_check {
     port = var.lb_health_check_port
   }

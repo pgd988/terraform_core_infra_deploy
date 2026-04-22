@@ -18,16 +18,16 @@ resource "google_container_cluster" "primary" {
   }
 
   node_config {
-    tags = ["gke-node", "ssh-allow"]
+    tags = ["gke-node"]
   }
 }
 
 resource "google_container_node_pool" "default_pool" {
-  count      = var.enable_gke ? 1 : 0
-  name       = "default-pool"
-  location   = var.zone
-  cluster    = google_container_cluster.primary[0].name
-  
+  count    = var.enable_gke ? 1 : 0
+  name     = "default-pool"
+  location = var.zone
+  cluster  = google_container_cluster.primary[0].name
+
   autoscaling {
     min_node_count = var.gke_default_pool_min_count
     max_node_count = var.gke_default_pool_max_count
@@ -36,7 +36,8 @@ resource "google_container_node_pool" "default_pool" {
   node_config {
     preemptible  = false
     machine_type = var.gke_default_pool_machine_type
-    
+    disk_size_gb = var.gke_default_pool_disk_size
+
     labels = {
       env = var.gke_default_pool_env_label
     }
@@ -44,15 +45,15 @@ resource "google_container_node_pool" "default_pool" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
-    tags = ["gke-node", "ssh-allow"]
+    tags = ["gke-node"]
   }
 }
 
 resource "google_container_node_pool" "apps_pool" {
-  count      = var.enable_gke ? 1 : 0
-  name       = "apps-pool"
-  location   = var.zone
-  cluster    = google_container_cluster.primary[0].name
+  count    = var.enable_gke ? 1 : 0
+  name     = "apps-pool"
+  location = var.zone
+  cluster  = google_container_cluster.primary[0].name
 
   autoscaling {
     min_node_count = var.gke_apps_pool_min_count
@@ -60,8 +61,9 @@ resource "google_container_node_pool" "apps_pool" {
   }
 
   node_config {
-    preemptible  = false
+    spot         = true
     machine_type = var.gke_apps_pool_machine_type
+    disk_size_gb = var.gke_apps_pool_disk_size
 
     labels = {
       env = var.gke_apps_pool_env_label
@@ -70,6 +72,6 @@ resource "google_container_node_pool" "apps_pool" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
-    tags = ["gke-node", "ssh-allow", "app"]
+    tags = ["gke-node", "app"]
   }
 }
