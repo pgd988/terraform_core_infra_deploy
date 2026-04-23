@@ -1,0 +1,7 @@
+apiVersion: v1
+description: Helm chart for default ingress nginx
+name: default-ingress-nginx
+version: 0.0.1
+maintainers:
+- name:  CICD-tech DevOps team
+  email: cicd-tech@proton.me

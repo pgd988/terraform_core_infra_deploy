@@ -1,0 +1,50 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+nameOverride: default-nginx-nginx
+replicaCount: 1
+image:
+  repository: gcr.io/[project]/nginx-ingress-default
+  tag: latest
+  pullPolicy: Always
+
+envVars: {}
+#  POST_SERVICE_HOST: post
+#  POST_SERVICE_PORT: 5000
+
+service:
+  name_1: nginx-def-http
+  type: ClusterIP
+  externalPort: 80
+  internalPort: 80
+
+nodeSelector:
+  #cloud.google.com/gke-nodepool: static-vm-pool-1
+  env: default
+
+scaling:
+  min: 1
+  max: 1
+  cpu_limit: 400
+
+persistence:
+  enabled: false
+  ## If defined, volume.beta.kubernetes.io/storage-class: <storageClass>
+  ## Default: volume.alpha.kubernetes.io/storage-class: default
+  storageClass: kubernetes.io/gce-pd
+  storageClassName: standard
+  accessMode: ReadWriteOnce
+  size: 10Gi
+
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 200m
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi

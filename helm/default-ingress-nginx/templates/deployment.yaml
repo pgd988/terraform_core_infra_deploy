@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "ui.fullname" . }}
+  labels:
+    app: {{ template "ui.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "ui.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "ui.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      imagePullSecrets:
+      - name: gcr-secret
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.envVars}}
+            env:
+          {{- range $key, $value := .Values.envVars }}
+            - name: "{{ $key }}"
+              value: "{{ $value }}"
+          {{- end }}
+        {{- end }}
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
+              name: {{ .Values.service.name }}
+          livenessProbe:
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+            tcpSocket:
+              port: {{ .Values.service.internalPort }}
+          readinessProbe:
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+            tcpSocket:
+              port: {{ .Values.service.internalPort }}
+          volumeMounts:
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}
+#      affinity:
+#        "podAntiAffinity": {
+#           "requiredDuringSchedulingIgnoredDuringExecution": [{
+#              "labelSelector": {
+#                 "matchExpressions": [{
+#                    "key": "app",
+#                    "operator": "In",
+#                    "values": ["{{ template "ui.fullname" . }}"]
+#                 }]
+#              },
+#                        "topologyKey": "kubernetes.io/hostname"
+#          }]
+#       }
+      volumes:
+        {{- if .Values.persistence.enabled }}
+        - name: logs
+          persistentVolumeClaim:
+            claimName: {{ template "ui.fullname" . }}-pvc
+        {{- end }}

@@ -66,6 +66,13 @@ data "google_compute_network_endpoint_group" "app_neg" {
   depends_on = [kubernetes_service.app_svc]
 }
 
+data "google_compute_network_endpoint_group" "ingress_nginx_neg" {
+  count      = var.enable_lb && var.enable_gke && var.enable_gke_internals && var.enable_helm ? 1 : 0
+  name       = "ingress-nginx-neg"
+  zone       = var.zone
+  depends_on = [helm_release.ingress_nginx_default]
+}
+
 # Global Backend Service pointing to Zonal NEG
 resource "google_compute_backend_service" "backend" {
   count                 = var.enable_lb && var.enable_gke && var.enable_gke_internals ? 1 : 0
@@ -82,11 +89,26 @@ resource "google_compute_backend_service" "backend" {
   }
 }
 
+resource "google_compute_backend_service" "ingress_nginx_backend" {
+  count                 = var.enable_lb && var.enable_gke && var.enable_gke_internals && var.enable_helm ? 1 : 0
+  name                  = "ingress-nginx-backend-service"
+  protocol              = "HTTP"
+  port_name             = "http"
+  load_balancing_scheme = "EXTERNAL"
+  health_checks         = [google_compute_health_check.tcp_health_check[0].id]
+
+  backend {
+    group                 = data.google_compute_network_endpoint_group.ingress_nginx_neg[0].id
+    balancing_mode        = "RATE"
+    max_rate_per_endpoint = 100
+  }
+}
+
 # URL Map directly tied to backend service
 resource "google_compute_url_map" "url_map" {
   count           = var.enable_lb && var.enable_gke && var.enable_gke_internals ? 1 : 0
   name            = "app-url-map"
-  default_service = google_compute_backend_service.backend[0].id
+  default_service = var.enable_helm ? google_compute_backend_service.ingress_nginx_backend[0].id : google_compute_backend_service.backend[0].id
 }
 
 # Target HTTPS Proxy combining URL Map and the SSL Cert
