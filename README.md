@@ -13,7 +13,7 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - **RabbitMQ VM** (`enable_rmq_vm`) - Message broker.
 - **Redis VM** (`enable_redis_vm`) - In-memory cache.
 - **Monitoring VM** (`enable_monitoring_vm`) - Observability stack.
-- **GitLab VM** (`enable_gitlab_vm`) - Code hosting and CI/CD.
+- **GitLab VM** (`enable_gitlab_vm`) - Code hosting and CI/CD. Deployed from the [GCP Marketplace GitLab CE image](https://console.cloud.google.com/marketplace/product/cloud-infrastructure-services/gitlab-ce-ubuntu-22-04) (Ubuntu 22.04, SSD boot disk). Recommended machine type: `e2-standard-4` (4 vCPU, 16 GB RAM).
 - **GitLab Runner VM** (`enable_gitlab_runner_vm`) - CI/CD job execution.
 
 ### Kubernetes (GKE)
@@ -23,7 +23,8 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 
 ### Load Balancing & Networking
 - **Classic HTTPS Load Balancer** (`enable_lb`): Deploys a global load balancer with a static IP and self-signed SSL certificates.
-- **Network Endpoint Groups (NEG)**: Automatically routes traffic from the Load Balancer to the Kubernetes NGINX Ingress controller.
+- **Network Endpoint Groups (NEG)**: All unmatched requests are routed to the NGINX Ingress controller via a dedicated NEG backend.
+- **Path-based Routing** (`lb_paths.tf`): Centralized file for managing URL map routing rules and backend assignments.
 - **VPC & Subnets**: Custom VPC and subnet configuration.
 - **Firewalls**: Configured for SSH access, health checks, and specific internal communication (e.g., allowing `10.0.0.0/8` to access database ports).
 
@@ -74,7 +75,8 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - `vpc.tf` / `firewall.tf`: Networking components.
 - `vms.tf`: Standalone compute instance definitions.
 - `gke.tf` / `gke_internals.tf` / `gke_helm.tf`: Kubernetes cluster, namespaces, and workloads.
-- `lb.tf`: Global HTTPS Load Balancer and NEG configurations.
+- `lb.tf`: Global HTTPS Load Balancer core components (SSL, IP, health checks, proxy, forwarding).
+- `lb_paths.tf`: Load Balancer routing configuration (URL map, NEG backends).
 - `service_accounts.tf`: IAM and Service Account definitions.
 - `outputs.tf`: Important output variables (IPs, cluster names, etc.).
 - `helm/`: Directory containing local Helm charts (e.g., `default-ingress-nginx`).

@@ -25,7 +25,7 @@ vm_types = {
   rmq           = "e2-standard-2"
   redis         = "e2-standard-2"
   monitoring    = "e2-standard-2"
-  gitlab        = "e2-standard-8"
+  gitlab        = "e2-standard-4"
   gitlab_runner = "e2-standard-4"
 }
 

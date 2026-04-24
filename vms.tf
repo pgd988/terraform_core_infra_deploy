@@ -124,7 +124,13 @@ resource "google_compute_instance" "monitoring_vm" {
   }
 }
 
-# --- GitLab VM ---
+# --- GitLab VM (Marketplace: GitLab CE on Ubuntu 22.04) ---
+resource "google_compute_address" "gitlab_static_ip" {
+  count  = var.enable_gitlab_vm ? 1 : 0
+  name   = "gitlab-vm-static-ip"
+  region = var.region
+}
+
 resource "google_compute_instance" "gitlab_vm" {
   count               = var.enable_gitlab_vm ? 1 : 0
   name                = "gitlab-vm"
@@ -132,18 +138,26 @@ resource "google_compute_instance" "gitlab_vm" {
   zone                = var.zone
   deletion_protection = true
 
-  tags = ["ssh-allow"]
+  tags = ["ssh-allow", "http-server", "https-server"]
+
+  metadata = {
+    google-logging-enabled    = "true"
+    google-monitoring-enabled = "true"
+  }
 
   boot_disk {
     initialize_params {
-      image = var.ubuntu_image
+      image = "cloud-infrastructure-services/gitlab-ce-ubuntu-2204"
       size  = var.vm_boot_disk_sizes["gitlab"]
+      type  = "pd-ssd"
     }
   }
 
   network_interface {
     subnetwork = google_compute_subnetwork.subnet.id
-    access_config {} # Ephemeral IP
+    access_config {
+      nat_ip = google_compute_address.gitlab_static_ip[0].address
+    }
   }
 }
 
