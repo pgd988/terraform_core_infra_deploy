@@ -7,7 +7,7 @@ output "db_vm_ip" {
 }
 
 output "lb_ip" {
-  value = var.enable_lb && var.enable_gke ? google_compute_global_address.gke_ingress_ip[0].address : null
+  value = var.enable_lb && var.enable_gke ? google_compute_global_address.lb_ip[0].address : null
 }
 
 output "gke_cluster_name" {

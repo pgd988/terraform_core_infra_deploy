@@ -42,3 +42,46 @@ resource "kubernetes_service" "app_svc" {
     type = "ClusterIP"
   }
 }
+
+# --- ArgoCD Resources ---
+resource "kubernetes_namespace" "argocd_ns" {
+  count = var.enable_gke && var.enable_gke_internals ? 1 : 0
+
+  metadata {
+    name = "argocd"
+
+    labels = {
+      managed-by = "terraform"
+    }
+  }
+}
+
+resource "kubernetes_service" "argocd_server_svc" {
+  count = var.enable_gke && var.enable_gke_internals ? 1 : 0
+
+  metadata {
+    name      = "argocd-server-neg-svc"
+    namespace = kubernetes_namespace.argocd_ns[0].metadata[0].name
+
+    annotations = {
+      "cloud.google.com/neg" = jsonencode({
+        "exposed_ports" = {
+          "8080" = { "name" = "argocd-server-neg" }
+        }
+      })
+    }
+  }
+
+  spec {
+    selector = {
+      "app.kubernetes.io/name" = "argocd-server"
+    }
+
+    port {
+      port        = 8080
+      target_port = 8080
+    }
+
+    type = "ClusterIP"
+  }
+}
