@@ -35,6 +35,12 @@ variable "enable_lb" {
   default     = false
 }
 
+variable "enable_argocd" {
+  description = "Enable ArgoCD deployment"
+  type        = bool
+  default     = false
+}
+
 # --- LB Params ---
 
 variable "lb_health_check_port" {

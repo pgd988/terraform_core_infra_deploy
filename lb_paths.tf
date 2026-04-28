@@ -30,7 +30,7 @@ resource "google_compute_backend_service" "ingress_nginx_backend" {
 
 # Retrieve the NEG created by the argocd-server service
 data "google_compute_network_endpoint_group" "argocd_neg" {
-  count      = var.enable_lb && var.enable_gke && var.enable_gke_internals ? 1 : 0
+  count      = var.enable_lb && var.enable_gke && var.enable_gke_internals && var.enable_argocd ? 1 : 0
   name       = "argocd-server-neg"
   zone       = var.zone
   depends_on = [kubernetes_service.argocd_server_svc]
@@ -38,7 +38,7 @@ data "google_compute_network_endpoint_group" "argocd_neg" {
 
 # Backend Service for ArgoCD
 resource "google_compute_backend_service" "argocd_backend" {
-  count                 = var.enable_lb && var.enable_gke && var.enable_gke_internals ? 1 : 0
+  count                 = var.enable_lb && var.enable_gke && var.enable_gke_internals && var.enable_argocd ? 1 : 0
   name                  = "argocd-backend-service"
   protocol              = "HTTP"
   port_name             = "http"
@@ -58,13 +58,19 @@ resource "google_compute_url_map" "url_map" {
   name            = "app-url-map"
   default_service = google_compute_backend_service.ingress_nginx_backend[0].id
 
-  host_rule {
-    hosts        = ["acd.example.com"]
-    path_matcher = "argocd"
+  dynamic "host_rule" {
+    for_each = var.enable_argocd ? [1] : []
+    content {
+      hosts        = ["acd.example.com"]
+      path_matcher = "argocd"
+    }
   }
 
-  path_matcher {
-    name            = "argocd"
-    default_service = google_compute_backend_service.argocd_backend[0].id
+  dynamic "path_matcher" {
+    for_each = var.enable_argocd ? [1] : []
+    content {
+      name            = "argocd"
+      default_service = google_compute_backend_service.argocd_backend[0].id
+    }
   }
 }

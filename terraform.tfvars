@@ -16,6 +16,7 @@ enable_redis_vm         = false
 enable_monitoring_vm    = false
 enable_gitlab_vm        = false
 enable_gitlab_runner_vm = false
+enable_argocd           = false
 
 # --- Environments & Sizing ---
 

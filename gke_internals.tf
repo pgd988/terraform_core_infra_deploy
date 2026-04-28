@@ -45,7 +45,7 @@ resource "kubernetes_service" "app_svc" {
 
 # --- ArgoCD Resources ---
 resource "kubernetes_namespace" "argocd_ns" {
-  count = var.enable_gke && var.enable_gke_internals ? 1 : 0
+  count = var.enable_gke && var.enable_gke_internals && var.enable_argocd ? 1 : 0
 
   metadata {
     name = "argocd"
@@ -57,7 +57,7 @@ resource "kubernetes_namespace" "argocd_ns" {
 }
 
 resource "kubernetes_service" "argocd_server_svc" {
-  count = var.enable_gke && var.enable_gke_internals ? 1 : 0
+  count = var.enable_gke && var.enable_gke_internals && var.enable_argocd ? 1 : 0
 
   metadata {
     name      = "argocd-server-neg-svc"
