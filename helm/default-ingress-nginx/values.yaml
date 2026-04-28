@@ -4,7 +4,7 @@
 nameOverride: default-nginx-nginx
 replicaCount: 1
 image:
-  repository: gcr.io/[project]/nginx-ingress-default
+  repository: nginx
   tag: latest
   pullPolicy: Always
 
