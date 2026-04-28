@@ -19,12 +19,13 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 ### Kubernetes (GKE)
 - **GKE Cluster** (`enable_gke`): Provisions a regional GKE cluster with configurable default and application node pools (machine types, disk sizes, autoscaling limits).
 - **Internal Resources** (`enable_gke_internals`): Deploys internal Kubernetes resources such as namespaces (`app_namespace`).
-- **Helm Deployments** (`enable_helm`): Conditionally deploys Helm charts to the cluster. Currently configured to deploy an `ingress-nginx-default` chart.
+- **Helm Deployments** (`enable_helm`): Conditionally deploys Helm charts to the cluster. Currently configured to deploy an `ingress-nginx-default` chart (with a dynamic config-reloader sidecar).
+- **ArgoCD & Argo Rollouts** (`enable_argocd`): Deploys ArgoCD (from local chart) and Argo Rollouts (from remote chart) into their respective namespaces. Configures a standalone NEG for the ArgoCD server.
 
 ### Load Balancing & Networking
 - **Classic HTTPS Load Balancer** (`enable_lb`): Deploys a global load balancer with a static IP and self-signed SSL certificates.
 - **Network Endpoint Groups (NEG)**: All unmatched requests are routed to the NGINX Ingress controller via a dedicated NEG backend.
-- **Path-based Routing** (`lb_paths.tf`): Centralized file for managing URL map routing rules and backend assignments.
+- **Path/Host-based Routing** (`lb_paths.tf`): Centralized file for managing URL map routing rules and backend assignments. Includes dynamic host-based routing for ArgoCD (`acd.example.com`).
 - **VPC & Subnets**: Custom VPC and subnet configuration.
 - **Firewalls**: Configured for SSH access, health checks, and specific internal communication (e.g., allowing `10.0.0.0/8` to access database ports).
 
@@ -53,6 +54,7 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
    enable_gke  = true
    enable_helm = true
    enable_lb   = true
+   enable_argocd = true
    
    enable_app_vm = false
    # ... other configurations

@@ -19,9 +19,72 @@ spec:
         app: {{ template "ui.name" . }}
         release: {{ .Release.Name }}
     spec:
-      imagePullSecrets:
-      - name: gcr-secret
+      # Required so the sidecar can send a SIGHUP signal to the main nginx process
+      shareProcessNamespace: true
+      
+      # initContainer ensures the live config is populated BEFORE Nginx starts
+      initContainers:
+        - name: init-nginx-config
+          image: alpine:3.20
+          volumeMounts:
+            - name: nginx-config-src
+              mountPath: /config-src
+            - name: nginx-config-live
+              mountPath: /config-live
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Initializing config..."
+              cp /config-src/* /config-live/ 2>/dev/null || true
+
       containers:
+        - name: nginx-config-reloader
+          image: alpine:3.20
+          volumeMounts:
+            - name: nginx-config-src
+              mountPath: /config-src
+              readOnly: true
+            - name: nginx-config-live
+              mountPath: /config-live
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              apk add --no-cache inotify-tools nginx procps
+
+              TMP_DIR=/tmp/nginx-test
+
+              reload_configs() {
+                echo "Preparing candidate config..."
+                rm -rf ${TMP_DIR}
+                mkdir -p ${TMP_DIR}
+                cp /config-src/* ${TMP_DIR}/ 2>/dev/null || true
+
+                echo "Testing candidate config..."
+                # NOTE: Testing using Alpine's nginx. This may fail if the main image relies on custom modules.
+                nginx -t -c /etc/nginx/nginx.conf -g "include ${TMP_DIR}/*.conf;"
+
+                if [ $? -eq 0 ]; then
+                  echo "Config valid — promoting"
+                  rm -f /config-live/*.conf
+                  cp ${TMP_DIR}/* /config-live/ 2>/dev/null || true
+                  
+                  echo "Reloading Nginx..."
+                  # Send SIGHUP to the main container's nginx process
+                  pkill -HUP -x nginx || echo "Nginx not running yet"
+                else
+                  echo "Config invalid — ignoring update"
+                fi
+              }
+
+              # K8s ConfigMap updates involve symlink swaps (..data), so we watch broadly
+              while true; do
+                inotifywait -e modify,delete,create,move -r /config-src
+                reload_configs
+              done
+              
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -50,29 +113,18 @@ spec:
             tcpSocket:
               port: {{ .Values.service.internalPort }}
           volumeMounts:
-            - name: nginx-sites
+            - name: nginx-config-live
               mountPath: /etc/nginx/conf.d
-              readOnly: true
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
     {{- end }}
-#      affinity:
-#        "podAntiAffinity": {
-#           "requiredDuringSchedulingIgnoredDuringExecution": [{
-#              "labelSelector": {
-#                 "matchExpressions": [{
-#                    "key": "app",
-#                    "operator": "In",
-#                    "values": ["{{ template "ui.fullname" . }}"]
-#                 }]
-#              },
-#                        "topologyKey": "kubernetes.io/hostname"
-#          }]
-#       }
       volumes:
-        - name: nginx-sites
+        - name: nginx-config-src
           configMap:
-          name: {{ template "ui.fullname" . }}-sites
+            # Fixed indentation error here
+            name: {{ template "ui.fullname" . }}-sites
+        - name: nginx-config-live
+          emptyDir: {}
