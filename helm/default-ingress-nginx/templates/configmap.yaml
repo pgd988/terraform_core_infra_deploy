@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "ui.fullname" . }}-sites
+data:
+{{ (.Files.Glob "nginx-sites/*").AsConfig | indent 2 }}
+

@@ -85,3 +85,15 @@ resource "kubernetes_service" "argocd_server_svc" {
     type = "ClusterIP"
   }
 }
+
+resource "kubernetes_namespace" "argo_rollouts_ns" {
+  count = var.enable_gke && var.enable_gke_internals && var.enable_argocd ? 1 : 0
+
+  metadata {
+    name = "argo-rollouts"
+
+    labels = {
+      managed-by = "terraform"
+    }
+  }
+}

@@ -50,6 +50,9 @@ spec:
             tcpSocket:
               port: {{ .Values.service.internalPort }}
           volumeMounts:
+            - name: nginx-sites
+              mountPath: /etc/nginx/conf.d
+              readOnly: true
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- if .Values.nodeSelector }}
@@ -70,8 +73,6 @@ spec:
 #          }]
 #       }
       volumes:
-        {{- if .Values.persistence.enabled }}
-        - name: logs
-          persistentVolumeClaim:
-            claimName: {{ template "ui.fullname" . }}-pvc
-        {{- end }}
+        - name: nginx-sites
+          configMap:
+          name: {{ template "ui.fullname" . }}-sites
