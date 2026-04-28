@@ -113,18 +113,31 @@ spec:
             tcpSocket:
               port: {{ .Values.service.internalPort }}
           volumeMounts:
-            - name: nginx-config-live
+            - name: nginx-sites
               mountPath: /etc/nginx/conf.d
+              readOnly: true
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
     {{- end }}
+#      affinity:
+#        "podAntiAffinity": {
+#           "requiredDuringSchedulingIgnoredDuringExecution": [{
+#              "labelSelector": {
+#                 "matchExpressions": [{
+#                    "key": "app",
+#                    "operator": "In",
+#                    "values": ["{{ template "ui.fullname" . }}"]
+#                 }]
+#              },
+#                        "topologyKey": "kubernetes.io/hostname"
+#          }]
+#       }
       volumes:
         - name: nginx-config-src
           configMap:
-            # Fixed indentation error here
             name: {{ template "ui.fullname" . }}-sites
         - name: nginx-config-live
           emptyDir: {}
