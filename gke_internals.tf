@@ -97,3 +97,38 @@ resource "kubernetes_namespace" "argo_rollouts_ns" {
     }
   }
 }
+
+# --- ArgoCD Git SSH Key Management ---
+
+resource "google_secret_manager_secret" "argocd_ssh_key" {
+  count     = var.enable_argocd ? 1 : 0
+  secret_id = "argocd-git-ssh-key"
+  
+  replication {
+    auto {}
+  }
+}
+
+data "google_secret_manager_secret_version" "argocd_ssh_key_version" {
+  count   = var.enable_argocd && var.argocd_ssh_key_ready ? 1 : 0
+  secret  = google_secret_manager_secret.argocd_ssh_key[0].secret_id
+  version = "latest"
+}
+
+resource "kubernetes_secret" "argocd_repo_creds" {
+  count = var.enable_gke && var.enable_gke_internals && var.enable_argocd && var.argocd_ssh_key_ready ? 1 : 0
+
+  metadata {
+    name      = "argocd-repo-creds"
+    namespace = kubernetes_namespace.argocd_ns[0].metadata[0].name
+    labels = {
+      "argocd.argoproj.io/secret-type" = "repository"
+    }
+  }
+
+  data = {
+    type          = "git"
+    url           = var.argocd_git_repo_url
+    sshPrivateKey = data.google_secret_manager_secret_version.argocd_ssh_key_version[0].secret_data
+  }
+}

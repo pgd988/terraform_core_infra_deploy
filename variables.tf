@@ -41,6 +41,18 @@ variable "enable_argocd" {
   default     = false
 }
 
+variable "argocd_ssh_key_ready" {
+  description = "Set to true once the SSH key has been manually added to Secret Manager"
+  type        = bool
+  default     = false
+}
+
+variable "argocd_git_repo_url" {
+  description = "The Git repository URL for ArgoCD access (e.g., git@github.com:your-org/your-repo.git)"
+  type        = string
+  default     = "git@github.com:your-org/your-repo.git"
+}
+
 # --- LB Params ---
 
 variable "lb_health_check_port" {

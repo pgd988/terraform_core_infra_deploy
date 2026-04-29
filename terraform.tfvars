@@ -16,7 +16,9 @@ enable_redis_vm         = false
 enable_monitoring_vm    = false
 enable_gitlab_vm        = false
 enable_gitlab_runner_vm = false
-enable_argocd           = false
+enable_argocd           = true
+argocd_ssh_key_ready    = false
+argocd_git_repo_url     = "git@github.com:your-org/your-repo.git"
 
 # --- Environments & Sizing ---
 
