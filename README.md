@@ -21,6 +21,7 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - **Internal Resources** (`enable_gke_internals`): Deploys internal Kubernetes resources such as namespaces (`app_namespace`).
 - **Helm Deployments** (`enable_helm`): Conditionally deploys Helm charts to the cluster. Currently configured to deploy an `ingress-nginx-default` chart (with a dynamic config-reloader sidecar).
 - **ArgoCD & Argo Rollouts** (`enable_argocd`): Deploys ArgoCD (from local chart) and Argo Rollouts (from remote chart) into their respective namespaces. Configures a standalone NEG for the ArgoCD server.
+- **ArgoCD Git Credentials & Bootstrap** (`argocd_ssh_key_ready` & `argocd_git_repo_url`): Employs a secure two-step process using GCP Secret Manager to inject SSH repository credentials into ArgoCD. Once the keys are ready, it dynamically templates and deploys a Helm post-install hook to initialize the root "App of Apps" bootstrap Application.
 
 ### Load Balancing & Networking
 - **Classic HTTPS Load Balancer** (`enable_lb`): Deploys a global load balancer with a static IP and self-signed SSL certificates.
@@ -31,6 +32,7 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 
 ### IAM & Security
 - **Service Accounts**: Provisions specific service accounts, such as `gcr-access-gitlab`, with least-privilege IAM roles (Artifact Registry Admin, Storage Object Admin, etc.) for CI/CD integrations.
+- **GCP Secret Manager Integration**: Securely manages the ArgoCD SSH Git credentials (`argocd-git-ssh-key`), preventing private keys from being exposed in plaintext Terraform state.
 
 ## Prerequisites
 
@@ -55,6 +57,10 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
    enable_helm = true
    enable_lb   = true
    enable_argocd = true
+   
+   # Two-step ArgoCD Git setup
+   argocd_git_repo_url  = "git@github.com:your-org/your-repo.git"
+   argocd_ssh_key_ready = false # Set to true ONLY after manually adding the key to Secret Manager
    
    enable_app_vm = false
    # ... other configurations
