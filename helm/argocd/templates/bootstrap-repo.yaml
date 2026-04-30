@@ -14,7 +14,7 @@ spec:
   source:
     repoURL: {{ .Values.bootstrapRepoUrl | default "git@github.com:your-org/argocd-bootstrap.git" | quote }}
     targetRevision: main
-    path: argocd
+    path: argocd/apps
 
   destination:
     server: https://kubernetes.default.svc
