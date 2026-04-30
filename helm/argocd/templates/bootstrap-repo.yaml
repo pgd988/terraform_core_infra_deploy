@@ -1,0 +1,27 @@
+{{- if .Values.argocdSshKeyReady }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+  name: root-app
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: {{ .Values.bootstrapRepoUrl | default "git@github.com:your-org/argocd-bootstrap.git" | quote }}
+    targetRevision: main
+    path: argocd
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+{{- end }}
