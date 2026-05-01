@@ -1,3 +1,20 @@
+resource "google_project_service" "artifactregistry" {
+  count              = var.enable_gke ? 1 : 0
+  project            = var.project_id
+  service            = "artifactregistry.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_artifact_registry_repository" "gke_repo" {
+  count         = var.enable_gke ? 1 : 0
+  location      = var.region
+  repository_id = "gke-docker-repo"
+  description   = "Docker repository for GKE workloads"
+  format        = "DOCKER"
+
+  depends_on = [google_project_service.artifactregistry]
+}
+
 resource "google_container_cluster" "primary" {
   count    = var.enable_gke ? 1 : 0
   name     = var.gke_cluster_name

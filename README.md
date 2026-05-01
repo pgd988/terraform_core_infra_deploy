@@ -17,7 +17,7 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - **GitLab Runner VM** (`enable_gitlab_runner_vm`) - CI/CD job execution.
 
 ### Kubernetes (GKE)
-- **GKE Cluster** (`enable_gke`): Provisions a regional GKE cluster with configurable default and application node pools (machine types, disk sizes, autoscaling limits).
+- **GKE Cluster** (`enable_gke`): Provisions a regional GKE cluster with configurable default and application node pools (machine types, disk sizes, autoscaling limits). Also provisions a Google Artifact Registry (`gke-docker-repo`) for Docker workloads.
 - **Internal Resources** (`enable_gke_internals`): Deploys internal Kubernetes resources such as namespaces (`app_namespace`).
 - **Helm Deployments** (`enable_helm`): Conditionally deploys Helm charts to the cluster. Currently configured to deploy an `ingress-nginx-default` chart (with a dynamic config-reloader sidecar).
 - **ArgoCD & Argo Rollouts** (`enable_argocd`): Deploys ArgoCD (from local chart) and Argo Rollouts (from remote chart) into their respective namespaces. Configures a standalone NEG for the ArgoCD server.
