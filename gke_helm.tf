@@ -16,10 +16,10 @@ resource "helm_release" "ingress_nginx_default" {
 resource "helm_release" "argocd" {
   count = var.enable_gke && var.enable_helm && var.enable_gke_internals && var.enable_argocd ? 1 : 0
 
-  name       = "argocd"
-  chart      = "./helm/argocd"
-  namespace  = kubernetes_namespace.argocd_ns[0].metadata[0].name
-  
+  name      = "argocd"
+  chart     = "./helm/argocd"
+  namespace = kubernetes_namespace.argocd_ns[0].metadata[0].name
+
   set {
     name  = "bootstrapRepoUrl"
     value = var.argocd_git_repo_url

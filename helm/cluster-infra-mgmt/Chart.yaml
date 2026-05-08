@@ -1,0 +1,7 @@
+apiVersion: v1
+description: Helm chart for cluster internal infra like namespaces secrets RBAC etc managment
+name: cluster-infra-mgmt
+version: 0.0.1
+maintainers:
+- name:  CICD-tech DevOps team
+  email: cicd-tech@proton.me

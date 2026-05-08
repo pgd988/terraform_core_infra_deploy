@@ -1,0 +1,23 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+nameOverride: cluster-infra-mgmt
+#replicaCount: 1
+#image:
+#  repository: nginx
+#  tag: latest
+#  pullPolicy: Always
+
+envVars: {}
+#  POST_SERVICE_HOST: post
+#  POST_SERVICE_PORT: 5000
+
+#service:
+#  name_1: nginx-def-http
+#  type: ClusterIP
+#  externalPort: 80
+#  internalPort: 80
+
+#nodeSelector:
+  #cloud.google.com/gke-nodepool: static-vm-pool-1
+#  env: default

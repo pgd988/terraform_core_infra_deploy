@@ -103,7 +103,7 @@ resource "kubernetes_namespace" "argo_rollouts_ns" {
 resource "google_secret_manager_secret" "argocd_ssh_key" {
   count     = var.enable_argocd ? 1 : 0
   secret_id = "argocd-git-ssh-key"
-  
+
   replication {
     auto {}
   }
