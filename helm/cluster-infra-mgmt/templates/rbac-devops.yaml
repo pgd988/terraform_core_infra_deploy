@@ -1,0 +1,75 @@
+# RBAC: "devops" group — cluster-wide access to all namespaces, NO access to secrets
+---
+# ClusterRole: grants access to all resources EXCEPT secrets
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: devops-cluster-role
+  labels:
+    app: {{ template "ui.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    managed-by: {{ .Release.Service }}
+rules:
+  # Core API group — all resources except secrets
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+      - pods/exec
+      - services
+      - endpoints
+      - configmaps
+      - persistentvolumeclaims
+      - replicationcontrollers
+      - namespaces
+      - nodes
+      - events
+      - serviceaccounts
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Apps API group
+  - apiGroups: ["apps"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Batch API group (jobs, cronjobs)
+  - apiGroups: ["batch"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Networking
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Autoscaling
+  - apiGroups: ["autoscaling"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # RBAC (read-only — so devops can inspect but not escalate)
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+    verbs: ["get", "list", "watch"]
+  # Storage
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+  # Policy
+  - apiGroups: ["policy"]
+    resources: ["poddisruptionbudgets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: devops-cluster-rolebinding
+  labels:
+    app: {{ template "ui.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    managed-by: {{ .Release.Service }}
+subjects:
+  - kind: Group
+    name: {{ .Values.devopsGroup }}
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: devops-cluster-role
+  apiGroup: rbac.authorization.k8s.io

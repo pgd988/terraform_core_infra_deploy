@@ -1,0 +1,72 @@
+# Network Policy for the apps namespace
+# Default deny with exceptions for intra-namespace, DNS, and GCP Load Balancer traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: apps-namespace-default-deny
+  namespace: {{ .Values.appNamespace }}
+  labels:
+    app: {{ template "ui.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    managed-by: {{ .Release.Service }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic from pods within the same namespace
+    - from:
+        - podSelector: {}
+    # Allow GCP Load Balancer health checks and NEG traffic
+    - from:
+        - ipBlock:
+            cidr: 130.211.0.0/22
+        - ipBlock:
+            cidr: 35.191.0.0/16
+        - ipBlock:
+            cidr: 209.85.152.0/22
+        - ipBlock:
+            cidr: 209.85.204.0/22
+    # Allow traffic from the default-ingress-nginx in the default namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: default
+          podSelector:
+            matchLabels:
+              app: default-nginx-nginx
+  egress:
+    # Allow DNS resolution (kube-dns / CoreDNS)
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow traffic to pods within the same namespace
+    - to:
+        - podSelector: {}
+    # Allow responses back to GCP Load Balancer ranges
+    - to:
+        - ipBlock:
+            cidr: 130.211.0.0/22
+        - ipBlock:
+            cidr: 35.191.0.0/16
+        - ipBlock:
+            cidr: 209.85.152.0/22
+        - ipBlock:
+            cidr: 209.85.204.0/22
+    # Allow traffic to the default-ingress-nginx in the default namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: default
+          podSelector:
+            matchLabels:
+              app: default-nginx-nginx

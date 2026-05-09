@@ -21,3 +21,8 @@ envVars: {}
 #nodeSelector:
   #cloud.google.com/gke-nodepool: static-vm-pool-1
 #  env: default
+
+# --- RBAC & Network Policy ---
+appNamespace: app-namespace
+developersGroup: developers
+devopsGroup: devops

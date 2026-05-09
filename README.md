@@ -22,6 +22,10 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - **Helm Deployments** (`enable_helm`): Conditionally deploys Helm charts to the cluster. Currently configured to deploy an `ingress-nginx-default` chart (with a dynamic config-reloader sidecar).
 - **ArgoCD & Argo Rollouts** (`enable_argocd`): Deploys ArgoCD (from local chart) and Argo Rollouts (from remote chart) into their respective namespaces. Configures a standalone NEG for the ArgoCD server.
 - **ArgoCD Git Credentials & Bootstrap** (`argocd_ssh_key_ready` & `argocd_git_repo_url`): Employs a secure two-step process using GCP Secret Manager to inject SSH repository credentials into ArgoCD. Once the keys are ready, it dynamically templates and deploys a Helm post-install hook to initialize the root "App of Apps" bootstrap Application.
+- **Cluster Infra Management** (`cluster-infra-mgmt` Helm chart): Deploys cluster-internal resources including network policies, RBAC roles, and bindings.
+- **Google Groups RBAC**: The cluster is configured with `authenticator_groups_config` to support IAM-connected RBAC via Google Groups. Groups must be nested under the `gke-security-groups@<main_domain>` parent group. Currently configured groups:
+  - `developers@<main_domain>` — read-only access to the app namespace (no secrets)
+  - `devops@<main_domain>` — cluster-wide access to all namespaces (no secrets)
 
 ### Load Balancing & Networking
 - **Classic HTTPS Load Balancer** (`enable_lb`): Deploys a global load balancer with a static IP and self-signed SSL certificates.
@@ -33,6 +37,16 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 ### IAM & Security
 - **Service Accounts**: Provisions specific service accounts, such as `gcr-access-gitlab`, with least-privilege IAM roles (Artifact Registry Admin, Storage Object Admin, etc.) for CI/CD integrations.
 - **GCP Secret Manager Integration**: Securely manages the ArgoCD SSH Git credentials (`argocd-git-ssh-key`), preventing private keys from being exposed in plaintext Terraform state.
+
+### Google Groups for RBAC — Setup Requirements
+
+The GKE cluster uses Google Groups to map RBAC policies to your organization's identity. For this to work:
+
+1. **Create a parent group** called `gke-security-groups@<your-domain>` in [Google Groups](https://groups.google.com) or Google Admin Console.
+2. **Nest your RBAC groups** (`developers@<your-domain>`, `devops@<your-domain>`) as **members** of the parent group.
+3. **Set `main_domain`** in `terraform.tfvars` to your organization's domain.
+
+> **Important:** Only groups nested under `gke-security-groups@<domain>` are recognized by GKE. Adding users directly to the parent group does not grant any cluster access.
 
 ## Prerequisites
 
@@ -87,4 +101,4 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - `lb_paths.tf`: Load Balancer routing configuration (URL map, NEG backends).
 - `service_accounts.tf`: IAM and Service Account definitions.
 - `outputs.tf`: Important output variables (IPs, cluster names, etc.).
-- `helm/`: Directory containing local Helm charts (e.g., `default-ingress-nginx`).
+- `helm/`: Directory containing local Helm charts (e.g., `default-ingress-nginx`, `argocd`, `cluster-infra-mgmt`).

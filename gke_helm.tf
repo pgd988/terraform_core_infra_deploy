@@ -46,3 +46,28 @@ resource "helm_release" "argo_rollouts" {
   depends_on = [kubernetes_namespace.argo_rollouts_ns]
 }
 
+resource "helm_release" "cluster_infra_mgmt" {
+  count = var.enable_gke && var.enable_helm && var.enable_gke_internals ? 1 : 0
+
+  name  = "cluster-infra-mgmt"
+  chart = "./helm/cluster-infra-mgmt"
+
+  namespace = kubernetes_namespace.app_ns[0].metadata[0].name
+
+  set {
+    name  = "appNamespace"
+    value = var.app_namespace
+  }
+
+  set {
+    name  = "developersGroup"
+    value = "developers@${var.main_domain}"
+  }
+
+  set {
+    name  = "devopsGroup"
+    value = "devops@${var.main_domain}"
+  }
+
+  depends_on = [kubernetes_namespace.app_ns]
+}

@@ -37,6 +37,11 @@ resource "google_container_cluster" "primary" {
   node_config {
     tags = ["gke-node"]
   }
+
+  # Enable Google Groups for RBAC — groups must be nested under gke-security-groups@domain
+  authenticator_groups_config {
+    security_group = "gke-security-groups@${var.main_domain}"
+  }
 }
 
 resource "google_container_node_pool" "default_pool" {

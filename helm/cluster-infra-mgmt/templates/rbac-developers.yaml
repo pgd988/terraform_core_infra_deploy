@@ -1,0 +1,61 @@
+# RBAC: "developers" group — read-only access to the apps namespace, no secrets
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: developers-role
+  namespace: {{ .Values.appNamespace }}
+  labels:
+    app: {{ template "ui.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    managed-by: {{ .Release.Service }}
+rules:
+  # Core API group — read-only, explicitly excluding secrets
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+      - services
+      - endpoints
+      - configmaps
+      - persistentvolumeclaims
+      - replicationcontrollers
+      - events
+      - serviceaccounts
+    verbs: ["get", "list", "watch"]
+  # Apps (deployments, statefulsets, etc.) — read-only
+  - apiGroups: ["apps"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+  # Batch (jobs, cronjobs) — read-only
+  - apiGroups: ["batch"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+  # Networking — read-only
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+  # Autoscaling — read-only
+  - apiGroups: ["autoscaling"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: developers-rolebinding
+  namespace: {{ .Values.appNamespace }}
+  labels:
+    app: {{ template "ui.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    managed-by: {{ .Release.Service }}
+subjects:
+  - kind: Group
+    name: {{ .Values.developersGroup }}
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: developers-role
+  apiGroup: rbac.authorization.k8s.io

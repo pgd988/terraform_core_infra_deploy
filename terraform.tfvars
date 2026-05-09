@@ -1,8 +1,9 @@
 project_id = "your-gcp-project-id"
 
 # Base Region
-region = "us-central1"
-zone   = "us-central1-a"
+region      = "us-central1"
+zone        = "us-central1-a"
+main_domain = "example.com"
 
 # Features enablement
 enable_gke              = false

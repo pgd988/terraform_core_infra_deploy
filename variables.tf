@@ -9,6 +9,11 @@ variable "region" {
   default     = "us-central1"
 }
 
+variable "main_domain" {
+  description = "The primary domain for the organization (used for Google Groups RBAC, etc.)"
+  type        = string
+}
+
 # --- Feature Flags ---
 
 variable "enable_gke" {
