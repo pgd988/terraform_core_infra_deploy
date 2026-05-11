@@ -22,6 +22,12 @@ variable "enable_gke" {
   default     = false
 }
 
+variable "enable_workload_identity" {
+  description = "Enable Workload Identity on the GKE cluster"
+  type        = bool
+  default     = false
+}
+
 variable "enable_gke_internals" {
   description = "Deploy internal GKE resources (like namespaces). Requires enable_gke = true."
   type        = bool

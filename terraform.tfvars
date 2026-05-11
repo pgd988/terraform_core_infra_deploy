@@ -8,6 +8,7 @@ main_domain = "example.com"
 # Features enablement
 enable_gke              = false
 enable_gke_internals    = false
+enable_workload_identity = false
 enable_helm             = false
 enable_lb               = false
 enable_app_vm           = false

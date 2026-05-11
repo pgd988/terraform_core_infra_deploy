@@ -42,6 +42,13 @@ resource "google_container_cluster" "primary" {
   authenticator_groups_config {
     security_group = "gke-security-groups@${var.main_domain}"
   }
+
+  dynamic "workload_identity_config" {
+    for_each = var.enable_workload_identity ? [1] : []
+    content {
+      workload_pool = "${var.project_id}.svc.id.goog"
+    }
+  }
 }
 
 resource "google_container_node_pool" "default_pool" {
@@ -73,6 +80,13 @@ resource "google_container_node_pool" "default_pool" {
       "https://www.googleapis.com/auth/trace.append",
     ]
     tags = ["gke-node"]
+
+    dynamic "workload_metadata_config" {
+      for_each = var.enable_workload_identity ? [1] : []
+      content {
+        mode = "GKE_METADATA"
+      }
+    }
   }
 }
 
@@ -105,5 +119,12 @@ resource "google_container_node_pool" "apps_pool" {
       "https://www.googleapis.com/auth/trace.append",
     ]
     tags = ["gke-node", "app"]
+
+    dynamic "workload_metadata_config" {
+      for_each = var.enable_workload_identity ? [1] : []
+      content {
+        mode = "GKE_METADATA"
+      }
+    }
   }
 }

@@ -18,6 +18,7 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 
 ### Kubernetes (GKE)
 - **GKE Cluster** (`enable_gke`): Provisions a regional GKE cluster with configurable default and application node pools (machine types, disk sizes, autoscaling limits). Also provisions a Google Artifact Registry (`gke-docker-repo`) for Docker workloads.
+- **Workload Identity** (`enable_workload_identity`): Toggles Workload Identity on the GKE cluster and node pools, allowing Kubernetes service accounts to securely authenticate to Google Cloud APIs.
 - **Internal Resources** (`enable_gke_internals`): Deploys internal Kubernetes resources such as namespaces (`app_namespace`).
 - **Helm Deployments** (`enable_helm`): Conditionally deploys Helm charts to the cluster. Currently configured to deploy an `ingress-nginx-default` chart (with a dynamic config-reloader sidecar).
 - **ArgoCD & Argo Rollouts** (`enable_argocd`): Deploys ArgoCD (from local chart) and Argo Rollouts (from remote chart) into their respective namespaces. Configures a standalone NEG for the ArgoCD server.
@@ -67,10 +68,11 @@ The GKE cluster uses Google Groups to map RBAC policies to your organization's i
    project_id = "your-gcp-project-id"
    region     = "us-central1"
    
-   enable_gke  = true
-   enable_helm = true
-   enable_lb   = true
-   enable_argocd = true
+   enable_gke               = true
+   enable_workload_identity = true
+   enable_helm              = true
+   enable_lb                = true
+   enable_argocd            = true
    
    # Two-step ArgoCD Git setup
    argocd_git_repo_url  = "git@github.com:your-org/your-repo.git"
