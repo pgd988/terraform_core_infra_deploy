@@ -40,3 +40,9 @@ provider "helm" {
     cluster_ca_certificate = try(base64decode(google_container_cluster.primary[0].master_auth[0].cluster_ca_certificate), "")
   }
 }
+
+resource "google_project_service" "iap" {
+  project            = var.project_id
+  service            = "iap.googleapis.com"
+  disable_on_destroy = false
+}

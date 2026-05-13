@@ -8,13 +8,13 @@ This project is feature-flag driven, allowing you to selectively deploy only the
 
 ### Compute (VMs)
 You can provision standalone VMs for various roles using the `enable_*_vm` variables. Each VM has customizable machine types and boot disk sizes:
-- **App VM** (`enable_app_vm`) - Application workloads.
-- **Database VM** (`enable_db_vm`) - Database hosting.
-- **RabbitMQ VM** (`enable_rmq_vm`) - Message broker.
-- **Redis VM** (`enable_redis_vm`) - In-memory cache.
-- **Monitoring VM** (`enable_monitoring_vm`) - Observability stack.
-- **GitLab VM** (`enable_gitlab_vm`) - Code hosting and CI/CD. Deployed from the [GCP Marketplace GitLab CE image](https://console.cloud.google.com/marketplace/product/cloud-infrastructure-services/gitlab-ce-ubuntu-22-04) (Ubuntu 22.04, SSD boot disk). Recommended machine type: `e2-standard-4` (4 vCPU, 16 GB RAM).
-- **GitLab Runner VM** (`enable_gitlab_runner_vm`) - CI/CD job execution.
+- **App VM** (`enable_app_vm`) - Application workloads (Static External IP).
+- **Database VM** (`enable_db_vm`) - Database hosting (Static Internal IP).
+- **RabbitMQ VM** (`enable_rmq_vm`) - Message broker (Static Internal IP).
+- **Redis VM** (`enable_redis_vm`) - In-memory cache (Ephemeral Internal IP).
+- **Monitoring VM** (`enable_monitoring_vm`) - Observability stack (Static External IP).
+- **GitLab VM** (`enable_gitlab_vm`) - Code hosting and CI/CD (Static External IP). Deployed from the [GCP Marketplace GitLab CE image](https://console.cloud.google.com/marketplace/product/cloud-infrastructure-services/gitlab-ce-ubuntu-22-04) (Ubuntu 22.04, SSD boot disk). Recommended machine type: `e2-standard-4` (4 vCPU, 16 GB RAM).
+- **GitLab Runner VM** (`enable_gitlab_runner_vm`) - CI/CD job execution (Static Internal IP).
 
 ### Kubernetes (GKE)
 - **GKE Cluster** (`enable_gke`): Provisions a regional GKE cluster with configurable default and application node pools (machine types, disk sizes, autoscaling limits). Also provisions a Google Artifact Registry (`gke-docker-repo`) for Docker workloads.
@@ -33,11 +33,12 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - **Network Endpoint Groups (NEG)**: All unmatched requests are routed to the NGINX Ingress controller via a dedicated NEG backend.
 - **Path/Host-based Routing** (`lb_paths.tf`): Centralized file for managing URL map routing rules and backend assignments. Includes dynamic host-based routing for ArgoCD (`acd.example.com`).
 - **VPC & Subnets**: Custom VPC and subnet configuration.
-- **Firewalls**: Configured for SSH access, health checks, and specific internal communication (e.g., allowing `10.0.0.0/8` to access database ports).
+- **Firewalls**: Configured for health checks, specific internal communication (e.g., allowing `10.0.0.0/8` to access database ports), and secure SSH access strictly via GCP Identity-Aware Proxy (IAP) (`35.235.240.0/20`).
 
 ### IAM & Security
 - **Service Accounts**: Provisions specific service accounts, such as `gcr-access-gitlab`, with least-privilege IAM roles (Artifact Registry Admin, Storage Object Admin, etc.) for CI/CD integrations.
 - **GCP Secret Manager Integration**: Securely manages the ArgoCD SSH Git credentials (`argocd-git-ssh-key`), preventing private keys from being exposed in plaintext Terraform state.
+- **IAP SSH Access**: SSH access is restricted to the GCP IAP service. Ensure your users have the `roles/iap.tunnelResourceAccessor` and OS login permissions to connect to the VMs via the Google Cloud Console.
 
 ### Google Groups for RBAC — Setup Requirements
 

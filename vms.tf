@@ -29,6 +29,14 @@ resource "google_compute_instance" "app_vm" {
     }
   }
 }
+# Static Internal IP for DB VM
+resource "google_compute_address" "db_static_ip" {
+  count        = var.enable_db_vm ? 1 : 0
+  name         = "db-vm-static-ip"
+  region       = var.region
+  subnetwork   = google_compute_subnetwork.subnet.id
+  address_type = "INTERNAL"
+}
 
 # --- DB VM ---
 resource "google_compute_instance" "db_vm" {
@@ -49,10 +57,16 @@ resource "google_compute_instance" "db_vm" {
 
   network_interface {
     subnetwork = google_compute_subnetwork.subnet.id
-    access_config {
-      # Ephemeral IP
-    }
+    network_ip = google_compute_address.db_static_ip[0].address
   }
+}
+# Static Internal IP for RMQ VM
+resource "google_compute_address" "rmq_static_ip" {
+  count        = var.enable_rmq_vm ? 1 : 0
+  name         = "rmq-vm-static-ip"
+  region       = var.region
+  subnetwork   = google_compute_subnetwork.subnet.id
+  address_type = "INTERNAL"
 }
 
 # --- RMQ VM ---
@@ -74,7 +88,7 @@ resource "google_compute_instance" "rmq_vm" {
 
   network_interface {
     subnetwork = google_compute_subnetwork.subnet.id
-    access_config {} # Ephemeral IP
+    network_ip = google_compute_address.rmq_static_ip[0].address
   }
 }
 
@@ -97,8 +111,13 @@ resource "google_compute_instance" "redis_vm" {
 
   network_interface {
     subnetwork = google_compute_subnetwork.subnet.id
-    access_config {} # Ephemeral IP
   }
+}
+# Static External IP for Monitoring VM
+resource "google_compute_address" "monitoring_static_ip" {
+  count  = var.enable_monitoring_vm ? 1 : 0
+  name   = "monitoring-vm-static-ip"
+  region = var.region
 }
 
 # --- Monitoring VM ---
@@ -120,16 +139,19 @@ resource "google_compute_instance" "monitoring_vm" {
 
   network_interface {
     subnetwork = google_compute_subnetwork.subnet.id
-    access_config {} # Ephemeral IP
+    access_config {
+      nat_ip = google_compute_address.monitoring_static_ip[0].address
+    }
   }
 }
-
-# --- GitLab VM (Marketplace: GitLab CE on Ubuntu 22.04) ---
+# Static External IP for GitLab VM
 resource "google_compute_address" "gitlab_static_ip" {
   count  = var.enable_gitlab_vm ? 1 : 0
   name   = "gitlab-vm-static-ip"
   region = var.region
 }
+
+# --- GitLab VM (Marketplace: GitLab CE on Ubuntu 22.04) ---
 
 resource "google_compute_instance" "gitlab_vm" {
   count               = var.enable_gitlab_vm ? 1 : 0
@@ -160,6 +182,14 @@ resource "google_compute_instance" "gitlab_vm" {
     }
   }
 }
+# Static Internal IP for GitLab Runner VM
+resource "google_compute_address" "gitlab_runner_static_ip" {
+  count        = var.enable_gitlab_runner_vm ? 1 : 0
+  name         = "gitlab-runner-vm-static-ip"
+  region       = var.region
+  subnetwork   = google_compute_subnetwork.subnet.id
+  address_type = "INTERNAL"
+}
 
 # --- GitLab Runner VM ---
 resource "google_compute_instance" "gitlab_runner_vm" {
@@ -180,6 +210,6 @@ resource "google_compute_instance" "gitlab_runner_vm" {
 
   network_interface {
     subnetwork = google_compute_subnetwork.subnet.id
-    access_config {} # Ephemeral IP
+    network_ip = google_compute_address.gitlab_runner_static_ip[0].address
   }
 }

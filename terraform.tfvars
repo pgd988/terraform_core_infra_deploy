@@ -6,21 +6,21 @@ zone        = "us-central1-a"
 main_domain = "example.com"
 
 # Features enablement
-enable_gke              = false
-enable_gke_internals    = false
+enable_gke               = false
+enable_gke_internals     = false
 enable_workload_identity = false
-enable_helm             = false
-enable_lb               = false
-enable_app_vm           = false
-enable_db_vm            = false
-enable_rmq_vm           = false
-enable_redis_vm         = false
-enable_monitoring_vm    = false
-enable_gitlab_vm        = false
-enable_gitlab_runner_vm = false
-enable_argocd           = true
-argocd_ssh_key_ready    = false
-argocd_git_repo_url     = "git@github.com:your-org/your-repo.git"
+enable_helm              = false
+enable_lb                = false
+enable_app_vm            = false
+enable_db_vm             = false
+enable_rmq_vm            = false
+enable_redis_vm          = false
+enable_monitoring_vm     = false
+enable_gitlab_vm         = false
+enable_gitlab_runner_vm  = false
+enable_argocd            = true
+argocd_ssh_key_ready     = false
+argocd_git_repo_url      = "git@github.com:your-org/your-repo.git"
 
 # --- Environments & Sizing ---
 

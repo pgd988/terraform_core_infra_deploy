@@ -3,7 +3,7 @@ output "app_vm_ip" {
 }
 
 output "db_vm_ip" {
-  value = var.enable_db_vm ? google_compute_instance.db_vm[0].network_interface[0].access_config[0].nat_ip : null
+  value = var.enable_db_vm ? google_compute_instance.db_vm[0].network_interface[0].network_ip : null
 }
 
 output "lb_ip" {
