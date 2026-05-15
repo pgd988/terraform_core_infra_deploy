@@ -1,9 +1,9 @@
 output "app_vm_ip" {
-  value = var.enable_app_vm ? google_compute_instance.app_vm[0].network_interface[0].access_config[0].nat_ip : null
+  value = module.app_vm.external_ip
 }
 
 output "db_vm_ip" {
-  value = var.enable_db_vm ? google_compute_instance.db_vm[0].network_interface[0].network_ip : null
+  value = module.db_vm.internal_ip
 }
 
 output "lb_ip" {

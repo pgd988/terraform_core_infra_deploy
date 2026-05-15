@@ -1,215 +1,118 @@
-# Static External IP for App VM
-resource "google_compute_address" "app_static_ip" {
-  count  = var.enable_app_vm ? 1 : 0
-  name   = "app-vm-static-ip"
-  region = var.region
-}
-
 # --- App VM ---
-resource "google_compute_instance" "app_vm" {
-  count               = var.enable_app_vm ? 1 : 0
-  name                = "app-vm"
-  machine_type        = var.vm_types["app"]
-  zone                = var.zone
-  deletion_protection = true
+module "app_vm" {
+  source = "./modules/compute_vm"
 
-  tags = ["ssh-allow", "app"]
-
-  boot_disk {
-    initialize_params {
-      image = var.ubuntu_image
-      size  = var.vm_boot_disk_sizes["app"]
-    }
-  }
-
-  network_interface {
-    subnetwork = google_compute_subnetwork.subnet.id
-    access_config {
-      nat_ip = google_compute_address.app_static_ip[0].address
-    }
-  }
-}
-# Static Internal IP for DB VM
-resource "google_compute_address" "db_static_ip" {
-  count        = var.enable_db_vm ? 1 : 0
-  name         = "db-vm-static-ip"
-  region       = var.region
-  subnetwork   = google_compute_subnetwork.subnet.id
-  address_type = "INTERNAL"
+  create_vm       = var.enable_app_vm
+  name            = "app-vm"
+  machine_type    = var.vm_types["app"]
+  zone            = var.zone
+  region          = var.region
+  subnetwork_id   = google_compute_subnetwork.subnet.id
+  boot_disk_image = var.ubuntu_image
+  boot_disk_size  = var.vm_boot_disk_sizes["app"]
+  ip_type         = "EXTERNAL_STATIC"
+  tags            = ["ssh-allow", "app"]
 }
 
 # --- DB VM ---
-resource "google_compute_instance" "db_vm" {
-  count               = var.enable_db_vm ? 1 : 0
-  name                = "db-vm"
-  machine_type        = var.vm_types["db"]
-  zone                = var.zone
-  deletion_protection = true
+module "db_vm" {
+  source = "./modules/compute_vm"
 
-  tags = ["ssh-allow", "db"]
-
-  boot_disk {
-    initialize_params {
-      image = var.ubuntu_image
-      size  = var.vm_boot_disk_sizes["db"]
-    }
-  }
-
-  network_interface {
-    subnetwork = google_compute_subnetwork.subnet.id
-    network_ip = google_compute_address.db_static_ip[0].address
-  }
-}
-# Static Internal IP for RMQ VM
-resource "google_compute_address" "rmq_static_ip" {
-  count        = var.enable_rmq_vm ? 1 : 0
-  name         = "rmq-vm-static-ip"
-  region       = var.region
-  subnetwork   = google_compute_subnetwork.subnet.id
-  address_type = "INTERNAL"
+  create_vm       = var.enable_db_vm
+  name            = "db-vm"
+  machine_type    = var.vm_types["db"]
+  zone            = var.zone
+  region          = var.region
+  subnetwork_id   = google_compute_subnetwork.subnet.id
+  boot_disk_image = var.ubuntu_image
+  boot_disk_size  = var.vm_boot_disk_sizes["db"]
+  ip_type         = "INTERNAL_STATIC"
+  tags            = ["ssh-allow", "db"]
 }
 
 # --- RMQ VM ---
-resource "google_compute_instance" "rmq_vm" {
-  count               = var.enable_rmq_vm ? 1 : 0
-  name                = "rmq-vm"
-  machine_type        = var.vm_types["rmq"]
-  zone                = var.zone
-  deletion_protection = true
+module "rmq_vm" {
+  source = "./modules/compute_vm"
 
-  tags = ["ssh-allow"]
-
-  boot_disk {
-    initialize_params {
-      image = var.ubuntu_image
-      size  = var.vm_boot_disk_sizes["rmq"]
-    }
-  }
-
-  network_interface {
-    subnetwork = google_compute_subnetwork.subnet.id
-    network_ip = google_compute_address.rmq_static_ip[0].address
-  }
+  create_vm       = var.enable_rmq_vm
+  name            = "rmq-vm"
+  machine_type    = var.vm_types["rmq"]
+  zone            = var.zone
+  region          = var.region
+  subnetwork_id   = google_compute_subnetwork.subnet.id
+  boot_disk_image = var.ubuntu_image
+  boot_disk_size  = var.vm_boot_disk_sizes["rmq"]
+  ip_type         = "INTERNAL_STATIC"
+  tags            = ["ssh-allow"]
 }
 
 # --- Redis VM ---
-resource "google_compute_instance" "redis_vm" {
-  count               = var.enable_redis_vm ? 1 : 0
-  name                = "redis-vm"
-  machine_type        = var.vm_types["redis"]
-  zone                = var.zone
-  deletion_protection = true
+module "redis_vm" {
+  source = "./modules/compute_vm"
 
-  tags = ["ssh-allow"]
-
-  boot_disk {
-    initialize_params {
-      image = var.ubuntu_image
-      size  = var.vm_boot_disk_sizes["redis"]
-    }
-  }
-
-  network_interface {
-    subnetwork = google_compute_subnetwork.subnet.id
-  }
-}
-# Static External IP for Monitoring VM
-resource "google_compute_address" "monitoring_static_ip" {
-  count  = var.enable_monitoring_vm ? 1 : 0
-  name   = "monitoring-vm-static-ip"
-  region = var.region
+  create_vm       = var.enable_redis_vm
+  name            = "redis-vm"
+  machine_type    = var.vm_types["redis"]
+  zone            = var.zone
+  region          = var.region
+  subnetwork_id   = google_compute_subnetwork.subnet.id
+  boot_disk_image = var.ubuntu_image
+  boot_disk_size  = var.vm_boot_disk_sizes["redis"]
+  ip_type         = "INTERNAL_EPHEMERAL"
+  tags            = ["ssh-allow"]
 }
 
 # --- Monitoring VM ---
-resource "google_compute_instance" "monitoring_vm" {
-  count               = var.enable_monitoring_vm ? 1 : 0
-  name                = "monitoring-vm"
-  machine_type        = var.vm_types["monitoring"]
-  zone                = var.zone
-  deletion_protection = true
+module "monitoring_vm" {
+  source = "./modules/compute_vm"
 
-  tags = ["ssh-allow"]
-
-  boot_disk {
-    initialize_params {
-      image = var.ubuntu_image
-      size  = var.vm_boot_disk_sizes["monitoring"]
-    }
-  }
-
-  network_interface {
-    subnetwork = google_compute_subnetwork.subnet.id
-    access_config {
-      nat_ip = google_compute_address.monitoring_static_ip[0].address
-    }
-  }
-}
-# Static External IP for GitLab VM
-resource "google_compute_address" "gitlab_static_ip" {
-  count  = var.enable_gitlab_vm ? 1 : 0
-  name   = "gitlab-vm-static-ip"
-  region = var.region
+  create_vm       = var.enable_monitoring_vm
+  name            = "monitoring-vm"
+  machine_type    = var.vm_types["monitoring"]
+  zone            = var.zone
+  region          = var.region
+  subnetwork_id   = google_compute_subnetwork.subnet.id
+  boot_disk_image = var.ubuntu_image
+  boot_disk_size  = var.vm_boot_disk_sizes["monitoring"]
+  ip_type         = "EXTERNAL_STATIC"
+  tags            = ["ssh-allow"]
 }
 
 # --- GitLab VM (Marketplace: GitLab CE on Ubuntu 22.04) ---
+module "gitlab_vm" {
+  source = "./modules/compute_vm"
 
-resource "google_compute_instance" "gitlab_vm" {
-  count               = var.enable_gitlab_vm ? 1 : 0
-  name                = "gitlab-vm"
-  machine_type        = var.vm_types["gitlab"]
-  zone                = var.zone
-  deletion_protection = true
-
-  tags = ["ssh-allow", "http-server", "https-server"]
+  create_vm       = var.enable_gitlab_vm
+  name            = "gitlab-vm"
+  machine_type    = var.vm_types["gitlab"]
+  zone            = var.zone
+  region          = var.region
+  subnetwork_id   = google_compute_subnetwork.subnet.id
+  boot_disk_image = "cloud-infrastructure-services/gitlab-ce-ubuntu-2204"
+  boot_disk_size  = var.vm_boot_disk_sizes["gitlab"]
+  boot_disk_type  = "pd-ssd"
+  ip_type         = "EXTERNAL_STATIC"
+  tags            = ["ssh-allow", "http-server", "https-server"]
 
   metadata = {
     google-logging-enabled    = "true"
     google-monitoring-enabled = "true"
   }
-
-  boot_disk {
-    initialize_params {
-      image = "cloud-infrastructure-services/gitlab-ce-ubuntu-2204"
-      size  = var.vm_boot_disk_sizes["gitlab"]
-      type  = "pd-ssd"
-    }
-  }
-
-  network_interface {
-    subnetwork = google_compute_subnetwork.subnet.id
-    access_config {
-      nat_ip = google_compute_address.gitlab_static_ip[0].address
-    }
-  }
-}
-# Static Internal IP for GitLab Runner VM
-resource "google_compute_address" "gitlab_runner_static_ip" {
-  count        = var.enable_gitlab_runner_vm ? 1 : 0
-  name         = "gitlab-runner-vm-static-ip"
-  region       = var.region
-  subnetwork   = google_compute_subnetwork.subnet.id
-  address_type = "INTERNAL"
 }
 
 # --- GitLab Runner VM ---
-resource "google_compute_instance" "gitlab_runner_vm" {
-  count               = var.enable_gitlab_runner_vm ? 1 : 0
-  name                = "gitlab-runner-vm"
-  machine_type        = var.vm_types["gitlab_runner"]
-  zone                = var.zone
-  deletion_protection = true
+module "gitlab_runner_vm" {
+  source = "./modules/compute_vm"
 
-  tags = ["ssh-allow"]
-
-  boot_disk {
-    initialize_params {
-      image = var.ubuntu_image
-      size  = var.vm_boot_disk_sizes["gitlab_runner"]
-    }
-  }
-
-  network_interface {
-    subnetwork = google_compute_subnetwork.subnet.id
-    network_ip = google_compute_address.gitlab_runner_static_ip[0].address
-  }
+  create_vm       = var.enable_gitlab_runner_vm
+  name            = "gitlab-runner-vm"
+  machine_type    = var.vm_types["gitlab_runner"]
+  zone            = var.zone
+  region          = var.region
+  subnetwork_id   = google_compute_subnetwork.subnet.id
+  boot_disk_image = var.ubuntu_image
+  boot_disk_size  = var.vm_boot_disk_sizes["gitlab_runner"]
+  ip_type         = "INTERNAL_STATIC"
+  tags            = ["ssh-allow"]
 }
+
