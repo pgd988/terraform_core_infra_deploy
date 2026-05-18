@@ -7,11 +7,14 @@ module "app_vm" {
   machine_type    = var.vm_types["app"]
   zone            = var.zone
   region          = var.region
-  subnetwork_id   = google_compute_subnetwork.subnet.id
+  subnetwork_id   = module.vpc.subnetwork_id
   boot_disk_image = var.ubuntu_image
   boot_disk_size  = var.vm_boot_disk_sizes["app"]
   ip_type         = "EXTERNAL_STATIC"
   tags            = ["ssh-allow", "app"]
+  labels = merge(local.common_labels, {
+    role = "app"
+  })
 }
 
 # --- DB VM ---
@@ -23,11 +26,14 @@ module "db_vm" {
   machine_type    = var.vm_types["db"]
   zone            = var.zone
   region          = var.region
-  subnetwork_id   = google_compute_subnetwork.subnet.id
+  subnetwork_id   = module.vpc.subnetwork_id
   boot_disk_image = var.ubuntu_image
   boot_disk_size  = var.vm_boot_disk_sizes["db"]
   ip_type         = "INTERNAL_STATIC"
   tags            = ["ssh-allow", "db"]
+  labels = merge(local.common_labels, {
+    role = "db"
+  })
 }
 
 # --- RMQ VM ---
@@ -39,11 +45,14 @@ module "rmq_vm" {
   machine_type    = var.vm_types["rmq"]
   zone            = var.zone
   region          = var.region
-  subnetwork_id   = google_compute_subnetwork.subnet.id
+  subnetwork_id   = module.vpc.subnetwork_id
   boot_disk_image = var.ubuntu_image
   boot_disk_size  = var.vm_boot_disk_sizes["rmq"]
   ip_type         = "INTERNAL_STATIC"
   tags            = ["ssh-allow"]
+  labels = merge(local.common_labels, {
+    role = "rmq"
+  })
 }
 
 # --- Redis VM ---
@@ -55,11 +64,14 @@ module "redis_vm" {
   machine_type    = var.vm_types["redis"]
   zone            = var.zone
   region          = var.region
-  subnetwork_id   = google_compute_subnetwork.subnet.id
+  subnetwork_id   = module.vpc.subnetwork_id
   boot_disk_image = var.ubuntu_image
   boot_disk_size  = var.vm_boot_disk_sizes["redis"]
   ip_type         = "INTERNAL_EPHEMERAL"
   tags            = ["ssh-allow"]
+  labels = merge(local.common_labels, {
+    role = "redis"
+  })
 }
 
 # --- Monitoring VM ---
@@ -71,11 +83,14 @@ module "monitoring_vm" {
   machine_type    = var.vm_types["monitoring"]
   zone            = var.zone
   region          = var.region
-  subnetwork_id   = google_compute_subnetwork.subnet.id
+  subnetwork_id   = module.vpc.subnetwork_id
   boot_disk_image = var.ubuntu_image
   boot_disk_size  = var.vm_boot_disk_sizes["monitoring"]
   ip_type         = "EXTERNAL_STATIC"
   tags            = ["ssh-allow"]
+  labels = merge(local.common_labels, {
+    role = "monitoring"
+  })
 }
 
 # --- GitLab VM (Marketplace: GitLab CE on Ubuntu 22.04) ---
@@ -87,12 +102,15 @@ module "gitlab_vm" {
   machine_type    = var.vm_types["gitlab"]
   zone            = var.zone
   region          = var.region
-  subnetwork_id   = google_compute_subnetwork.subnet.id
+  subnetwork_id   = module.vpc.subnetwork_id
   boot_disk_image = "cloud-infrastructure-services/gitlab-ce-ubuntu-2204"
   boot_disk_size  = var.vm_boot_disk_sizes["gitlab"]
   boot_disk_type  = "pd-ssd"
   ip_type         = "EXTERNAL_STATIC"
   tags            = ["ssh-allow", "http-server", "https-server"]
+  labels = merge(local.common_labels, {
+    role = "gitlab"
+  })
 
   metadata = {
     google-logging-enabled    = "true"
@@ -109,10 +127,13 @@ module "gitlab_runner_vm" {
   machine_type    = var.vm_types["gitlab_runner"]
   zone            = var.zone
   region          = var.region
-  subnetwork_id   = google_compute_subnetwork.subnet.id
+  subnetwork_id   = module.vpc.subnetwork_id
   boot_disk_image = var.ubuntu_image
   boot_disk_size  = var.vm_boot_disk_sizes["gitlab_runner"]
   ip_type         = "INTERNAL_STATIC"
   tags            = ["ssh-allow"]
+  labels = merge(local.common_labels, {
+    role = "gitlab-runner"
+  })
 }
 

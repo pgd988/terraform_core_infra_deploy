@@ -28,16 +28,16 @@ provider "google" {
 data "google_client_config" "default" {}
 
 provider "kubernetes" {
-  host                   = try("https://${google_container_cluster.primary[0].endpoint}", "http://localhost")
+  host                   = try("https://${module.gke_cluster.endpoint}", "http://localhost")
   token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = try(base64decode(google_container_cluster.primary[0].master_auth[0].cluster_ca_certificate), "")
+  cluster_ca_certificate = try(base64decode(module.gke_cluster.cluster_ca_certificate), "")
 }
 
 provider "helm" {
   kubernetes {
-    host                   = try("https://${google_container_cluster.primary[0].endpoint}", "http://localhost")
+    host                   = try("https://${module.gke_cluster.endpoint}", "http://localhost")
     token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = try(base64decode(google_container_cluster.primary[0].master_auth[0].cluster_ca_certificate), "")
+    cluster_ca_certificate = try(base64decode(module.gke_cluster.cluster_ca_certificate), "")
   }
 }
 
@@ -45,4 +45,20 @@ resource "google_project_service" "iap" {
   project            = var.project_id
   service            = "iap.googleapis.com"
   disable_on_destroy = false
+}
+
+resource "google_project_service" "artifactregistry" {
+  project            = var.project_id
+  service            = "artifactregistry.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_artifact_registry_repository" "gke_repo" {
+  location      = var.region
+  repository_id = "gke-docker-repo"
+  description   = "Docker repository for workloads"
+  format        = "DOCKER"
+  labels        = local.common_labels
+
+  depends_on = [google_project_service.artifactregistry]
 }

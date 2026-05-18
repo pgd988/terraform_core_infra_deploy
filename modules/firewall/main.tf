@@ -1,7 +1,7 @@
 # Allow LB health checks
 resource "google_compute_firewall" "allow_lb_health_check" {
   name    = "allow-lb-health-check"
-  network = google_compute_network.vpc.name
+  network = var.network_name
 
   allow {
     protocol = "tcp"
@@ -14,7 +14,7 @@ resource "google_compute_firewall" "allow_lb_health_check" {
 # DB Ingress firewall rule (allow internal network to talk to DB)
 resource "google_compute_firewall" "db_ingress" {
   name    = "allow-db-ingress"
-  network = google_compute_network.vpc.name
+  network = var.network_name
 
   allow {
     protocol = "tcp"
@@ -25,10 +25,10 @@ resource "google_compute_firewall" "db_ingress" {
   target_tags   = ["db"]
 }
 
-# Allow SSH ingress
+# Allow SSH ingress (restricted to IAP)
 resource "google_compute_firewall" "allow_ssh" {
   name    = "allow-ssh-ingress"
-  network = google_compute_network.vpc.name
+  network = var.network_name
 
   allow {
     protocol = "tcp"

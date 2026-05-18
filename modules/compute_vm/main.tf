@@ -20,6 +20,7 @@ resource "google_compute_instance" "vm" {
   deletion_protection = true
 
   tags     = var.tags
+  labels   = var.labels
   metadata = var.metadata
 
   boot_disk {

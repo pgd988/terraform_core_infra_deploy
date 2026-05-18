@@ -7,13 +7,18 @@ output "db_vm_ip" {
 }
 
 output "lb_ip" {
-  value = var.enable_lb && var.enable_gke ? google_compute_global_address.lb_ip[0].address : null
+  value = module.load_balancer.lb_ip
 }
 
 output "gke_cluster_name" {
-  value = var.enable_gke ? google_container_cluster.primary[0].name : null
+  value = module.gke_cluster.name
 }
 
 output "gke_cluster_endpoint" {
-  value = var.enable_gke ? google_container_cluster.primary[0].endpoint : null
+  value = module.gke_cluster.endpoint
+}
+
+output "artifact_registry_id" {
+  description = "The ID of the artifact registry repository"
+  value       = google_artifact_registry_repository.gke_repo.id
 }
