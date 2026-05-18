@@ -40,6 +40,10 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - **GCP Secret Manager Integration**: Securely manages the ArgoCD SSH Git credentials (`argocd-git-ssh-key`), preventing private keys from being exposed in plaintext Terraform state.
 - **IAP SSH Access**: SSH access is restricted to the GCP IAP service. Ensure your users have the `roles/iap.tunnelResourceAccessor` and OS login permissions to connect to the VMs via the Google Cloud Console.
 
+### Standardized Resource Labeling
+- **Global Locals (`locals.tf`)**: Implements a consistent tagging strategy across all supported GCP resources. Base labels (like `managed-by`, `environment`, and `project`) flow from a central `locals.tf` file down into all modules (VMs, GKE clusters, Secret Manager, Artifact Registry).
+- **Dynamic Role Tags**: VM modules merge the baseline labels with specific role-based tags (e.g., `role = "db"`) to facilitate exact billing allocation and metadata tracking.
+
 ### Google Groups for RBAC — Setup Requirements
 
 The GKE cluster uses Google Groups to map RBAC policies to your organization's identity. For this to work:
@@ -95,13 +99,26 @@ The GKE cluster uses Google Groups to map RBAC policies to your organization's i
 
 ## Repository Structure
 
-- `variables.tf`: Input variable definitions and default values.
-- `terraform.tfvars`: Environment-specific variable overrides.
-- `vpc.tf` / `firewall.tf`: Networking components.
-- `vms.tf`: Standalone compute instance definitions.
-- `gke.tf` / `gke_internals.tf` / `gke_helm.tf`: Kubernetes cluster, namespaces, and workloads.
-- `lb.tf`: Global HTTPS Load Balancer core components (SSL, IP, health checks, proxy, forwarding).
-- `lb_paths.tf`: Load Balancer routing configuration (URL map, NEG backends).
-- `service_accounts.tf`: IAM and Service Account definitions.
-- `outputs.tf`: Important output variables (IPs, cluster names, etc.).
-- `helm/`: Directory containing local Helm charts (e.g., `default-ingress-nginx`, `argocd`, `cluster-infra-mgmt`).
+The project follows a clean, modular architecture:
+
+- **Root Configuration:**
+  - `variables.tf` / `terraform.tfvars`: Input variables and environment overrides.
+  - `locals.tf`: Centralized local variables, such as global resource labels.
+  - `network.tf`: Instantiates the `vpc` and `firewall` modules.
+  - `load_balancer.tf`: Instantiates the `load_balancer` module.
+  - `vms.tf`: Standalone compute instance definitions (calling `compute_vm` module).
+  - `gke.tf` / `gke_internals.tf` / `gke_helm.tf`: Kubernetes root configurations calling their respective modules.
+  - `service_accounts.tf` / `providers.tf`: IAM, Providers, and Artifact Registry.
+  - `outputs.tf`: Important output variables.
+  
+- **Modules (`modules/`):**
+  - `vpc`: Encapsulates network and subnet creation (including GKE secondary ranges).
+  - `firewall`: Manages health check, DB, and SSH/IAP ingress rules.
+  - `load_balancer`: Global HTTPS Load Balancer, SSL certificates, routing (URL Maps), and backend NEG definitions.
+  - `gke_cluster`: Regional GKE cluster and node pool definitions.
+  - `gke_internals`: Cluster internal resources (Namespaces, Services, Secrets).
+  - `gke_helm`: Helm chart deployments (Nginx Ingress, ArgoCD, etc.).
+  - `compute_vm`: Standardized Compute Engine instance definition.
+
+- **Helm Charts (`helm/`):**
+  - Directory containing local Helm charts (e.g., `default-ingress-nginx`, `argocd`, `cluster-infra-mgmt`).
