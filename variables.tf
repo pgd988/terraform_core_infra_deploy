@@ -58,6 +58,12 @@ variable "argocd_ssh_key_ready" {
   default     = false
 }
 
+variable "enable_soc2_compliance" {
+  description = "Enable SOC2 compliance policies (Note: requires CMEK and Confidential VMs)"
+  type        = bool
+  default     = false
+}
+
 variable "argocd_git_repo_url" {
   description = "The Git repository URL for ArgoCD access (e.g., git@github.com:your-org/your-repo.git)"
   type        = string

@@ -21,7 +21,21 @@ resource "google_compute_instance" "vm" {
 
   tags     = var.tags
   labels   = var.labels
-  metadata = var.metadata
+  metadata = merge(var.metadata, var.enable_oslogin ? { "enable-oslogin" = "TRUE" } : {})
+
+  dynamic "confidential_instance_config" {
+    for_each = var.enable_confidential_compute ? [1] : []
+    content {
+      enable_confidential_compute = true
+    }
+  }
+
+  dynamic "scheduling" {
+    for_each = var.enable_confidential_compute ? [1] : []
+    content {
+      on_host_maintenance = "TERMINATE"
+    }
+  }
 
   boot_disk {
     initialize_params {
@@ -29,6 +43,7 @@ resource "google_compute_instance" "vm" {
       size  = var.boot_disk_size
       type  = var.boot_disk_type
     }
+    kms_key_self_link = var.kms_key_name != "" ? var.kms_key_name : null
   }
 
   network_interface {

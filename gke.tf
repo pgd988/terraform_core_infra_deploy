@@ -14,15 +14,18 @@ module "gke_cluster" {
   enable_workload_identity      = var.enable_workload_identity
   resource_labels               = local.common_labels
 
+  kms_key_name              = var.enable_soc2_compliance ? google_kms_crypto_key.soc2_key[0].id : ""
+  enable_confidential_nodes = var.enable_soc2_compliance
+
   default_pool_min_count    = var.gke_default_pool_min_count
   default_pool_max_count    = var.gke_default_pool_max_count
-  default_pool_machine_type = var.gke_default_pool_machine_type
+  default_pool_machine_type = var.enable_soc2_compliance ? "n2d-standard-2" : var.gke_default_pool_machine_type
   default_pool_disk_size    = var.gke_default_pool_disk_size
   default_pool_env_label    = var.gke_default_pool_env_label
 
   apps_pool_min_count    = var.gke_apps_pool_min_count
   apps_pool_max_count    = var.gke_apps_pool_max_count
-  apps_pool_machine_type = var.gke_apps_pool_machine_type
+  apps_pool_machine_type = var.enable_soc2_compliance ? "n2d-standard-2" : var.gke_apps_pool_machine_type
   apps_pool_disk_size    = var.gke_apps_pool_disk_size
   apps_pool_env_label    = var.gke_apps_pool_env_label
 }

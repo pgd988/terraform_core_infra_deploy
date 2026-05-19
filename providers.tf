@@ -59,6 +59,10 @@ resource "google_artifact_registry_repository" "gke_repo" {
   description   = "Docker repository for workloads"
   format        = "DOCKER"
   labels        = local.common_labels
+  kms_key_name  = var.enable_soc2_compliance ? google_kms_crypto_key.soc2_key[0].id : null
 
-  depends_on = [google_project_service.artifactregistry]
+  depends_on = [
+    google_project_service.artifactregistry,
+    google_kms_crypto_key_iam_member.artifact_registry_kms
+  ]
 }

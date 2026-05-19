@@ -112,3 +112,15 @@ variable "resource_labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "kms_key_name" {
+  description = "KMS key self link for application layer secrets and boot disk encryption"
+  type        = string
+  default     = ""
+}
+
+variable "enable_confidential_nodes" {
+  description = "Enable confidential nodes"
+  type        = bool
+  default     = false
+}

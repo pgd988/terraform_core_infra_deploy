@@ -73,3 +73,21 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "kms_key_name" {
+  description = "KMS key self link for boot disk encryption"
+  type        = string
+  default     = ""
+}
+
+variable "enable_confidential_compute" {
+  description = "Enable confidential computing"
+  type        = bool
+  default     = false
+}
+
+variable "enable_oslogin" {
+  description = "Enable OS Login"
+  type        = bool
+  default     = false
+}

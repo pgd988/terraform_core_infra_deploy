@@ -7,3 +7,9 @@ variable "region" {
   description = "The GCP region for the subnetwork"
   type        = string
 }
+
+variable "enable_flow_logs" {
+  description = "Enable VPC Flow Logs on the subnetwork"
+  type        = bool
+  default     = false
+}

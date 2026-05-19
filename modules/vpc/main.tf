@@ -18,4 +18,13 @@ resource "google_compute_subnetwork" "subnet" {
     range_name    = "gke-services"
     ip_cidr_range = "10.20.0.0/20"
   }
+
+  dynamic "log_config" {
+    for_each = var.enable_flow_logs ? [1] : []
+    content {
+      aggregation_interval = "INTERVAL_5_SEC"
+      flow_sampling        = 0.5
+      metadata             = "INCLUDE_ALL_METADATA"
+    }
+  }
 }

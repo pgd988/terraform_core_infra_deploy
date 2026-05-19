@@ -16,6 +16,21 @@ resource "google_container_cluster" "primary" {
 
   resource_labels = var.resource_labels
 
+  dynamic "database_encryption" {
+    for_each = var.kms_key_name != "" ? [1] : []
+    content {
+      state    = "ENCRYPTED"
+      key_name = var.kms_key_name
+    }
+  }
+
+  dynamic "confidential_nodes" {
+    for_each = var.enable_confidential_nodes ? [1] : []
+    content {
+      enabled = true
+    }
+  }
+
   node_config {
     tags = ["gke-node"]
   }
@@ -44,9 +59,10 @@ resource "google_container_node_pool" "default_pool" {
   }
 
   node_config {
-    preemptible  = false
-    machine_type = var.default_pool_machine_type
-    disk_size_gb = var.default_pool_disk_size
+    preemptible       = false
+    machine_type      = var.default_pool_machine_type
+    disk_size_gb      = var.default_pool_disk_size
+    boot_disk_kms_key = var.kms_key_name != "" ? var.kms_key_name : null
 
     labels = {
       env = var.default_pool_env_label
@@ -85,9 +101,10 @@ resource "google_container_node_pool" "apps_pool" {
   }
 
   node_config {
-    spot         = true
-    machine_type = var.apps_pool_machine_type
-    disk_size_gb = var.apps_pool_disk_size
+    spot              = true
+    machine_type      = var.apps_pool_machine_type
+    disk_size_gb      = var.apps_pool_disk_size
+    boot_disk_kms_key = var.kms_key_name != "" ? var.kms_key_name : null
 
     labels = {
       env = var.apps_pool_env_label

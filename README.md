@@ -44,6 +44,14 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - **Global Locals (`locals.tf`)**: Implements a consistent tagging strategy across all supported GCP resources. Base labels (like `managed-by`, `environment`, and `project`) flow from a central `locals.tf` file down into all modules (VMs, GKE clusters, Secret Manager, Artifact Registry).
 - **Dynamic Role Tags**: VM modules merge the baseline labels with specific role-based tags (e.g., `role = "db"`) to facilitate exact billing allocation and metadata tracking.
 
+### Dynamic SOC2 Compliance
+- **GCP Hardening Toolkit Integration**: The `enable_soc2_compliance` variable seamlessly integrates the official Google Cloud [SOC2 Compliance Blueprint](https://github.com/GoogleCloudPlatform/gcp-hardening-toolkit/tree/main/blueprints/gcp-compliance-soc2).
+- **Automated Infrastructure Adaptation**: Toggling this flag automatically reconfigures the underlying infrastructure to strictly adhere to SOC2 Organization Policies:
+  - **Confidential Computing**: Overrides VM and GKE node pool machine types to `n2d-standard-2` and enables `confidential_instance_config`/`confidential_nodes`.
+  - **Customer-Managed Encryption Keys (CMEK)**: Dynamically provisions KMS Keyrings and CryptoKeys, grants IAM decryption roles, and encrypts VM boot disks, GKE application-layer secrets, and Artifact Registry.
+  - **VPC Flow Logs & OS Login**: Automatically enables subnetwork flow logs (50% sample rate) and OS Login across all compute instances.
+  - **External IP Restriction**: Safely skips the deployment of VMs requiring external IPs (App, Monitoring, GitLab) to comply with the `compute.vmExternalIpAccess` block policy.
+
 ### Google Groups for RBAC — Setup Requirements
 
 The GKE cluster uses Google Groups to map RBAC policies to your organization's identity. For this to work:
@@ -109,6 +117,8 @@ The project follows a clean, modular architecture:
   - `vms.tf`: Standalone compute instance definitions (calling `compute_vm` module).
   - `gke.tf` / `gke_internals.tf` / `gke_helm.tf`: Kubernetes root configurations calling their respective modules.
   - `service_accounts.tf` / `providers.tf`: IAM, Providers, and Artifact Registry.
+  - `compliance.tf`: Instantiates the Google Cloud SOC2 hardening blueprint.
+  - `kms.tf`: Provisions Customer-Managed Encryption Keys (CMEK) when SOC2 is enabled.
   - `outputs.tf`: Important output variables.
   
 - **Modules (`modules/`):**

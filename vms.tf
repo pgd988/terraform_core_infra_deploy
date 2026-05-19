@@ -2,9 +2,9 @@
 module "app_vm" {
   source = "./modules/compute_vm"
 
-  create_vm       = var.enable_app_vm
+  create_vm       = var.enable_app_vm && !var.enable_soc2_compliance
   name            = "app-vm"
-  machine_type    = var.vm_types["app"]
+  machine_type    = var.enable_soc2_compliance ? "n2d-standard-2" : var.vm_types["app"]
   zone            = var.zone
   region          = var.region
   subnetwork_id   = module.vpc.subnetwork_id
@@ -15,6 +15,9 @@ module "app_vm" {
   labels = merge(local.common_labels, {
     role = "app"
   })
+  kms_key_name                = var.enable_soc2_compliance ? google_kms_crypto_key.soc2_key[0].id : ""
+  enable_confidential_compute = var.enable_soc2_compliance
+  enable_oslogin              = var.enable_soc2_compliance
 }
 
 # --- DB VM ---
@@ -23,7 +26,7 @@ module "db_vm" {
 
   create_vm       = var.enable_db_vm
   name            = "db-vm"
-  machine_type    = var.vm_types["db"]
+  machine_type    = var.enable_soc2_compliance ? "n2d-standard-2" : var.vm_types["db"]
   zone            = var.zone
   region          = var.region
   subnetwork_id   = module.vpc.subnetwork_id
@@ -34,6 +37,9 @@ module "db_vm" {
   labels = merge(local.common_labels, {
     role = "db"
   })
+  kms_key_name                = var.enable_soc2_compliance ? google_kms_crypto_key.soc2_key[0].id : ""
+  enable_confidential_compute = var.enable_soc2_compliance
+  enable_oslogin              = var.enable_soc2_compliance
 }
 
 # --- RMQ VM ---
@@ -42,7 +48,7 @@ module "rmq_vm" {
 
   create_vm       = var.enable_rmq_vm
   name            = "rmq-vm"
-  machine_type    = var.vm_types["rmq"]
+  machine_type    = var.enable_soc2_compliance ? "n2d-standard-2" : var.vm_types["rmq"]
   zone            = var.zone
   region          = var.region
   subnetwork_id   = module.vpc.subnetwork_id
@@ -53,6 +59,9 @@ module "rmq_vm" {
   labels = merge(local.common_labels, {
     role = "rmq"
   })
+  kms_key_name                = var.enable_soc2_compliance ? google_kms_crypto_key.soc2_key[0].id : ""
+  enable_confidential_compute = var.enable_soc2_compliance
+  enable_oslogin              = var.enable_soc2_compliance
 }
 
 # --- Redis VM ---
@@ -61,7 +70,7 @@ module "redis_vm" {
 
   create_vm       = var.enable_redis_vm
   name            = "redis-vm"
-  machine_type    = var.vm_types["redis"]
+  machine_type    = var.enable_soc2_compliance ? "n2d-standard-2" : var.vm_types["redis"]
   zone            = var.zone
   region          = var.region
   subnetwork_id   = module.vpc.subnetwork_id
@@ -72,15 +81,18 @@ module "redis_vm" {
   labels = merge(local.common_labels, {
     role = "redis"
   })
+  kms_key_name                = var.enable_soc2_compliance ? google_kms_crypto_key.soc2_key[0].id : ""
+  enable_confidential_compute = var.enable_soc2_compliance
+  enable_oslogin              = var.enable_soc2_compliance
 }
 
 # --- Monitoring VM ---
 module "monitoring_vm" {
   source = "./modules/compute_vm"
 
-  create_vm       = var.enable_monitoring_vm
+  create_vm       = var.enable_monitoring_vm && !var.enable_soc2_compliance
   name            = "monitoring-vm"
-  machine_type    = var.vm_types["monitoring"]
+  machine_type    = var.enable_soc2_compliance ? "n2d-standard-2" : var.vm_types["monitoring"]
   zone            = var.zone
   region          = var.region
   subnetwork_id   = module.vpc.subnetwork_id
@@ -91,15 +103,18 @@ module "monitoring_vm" {
   labels = merge(local.common_labels, {
     role = "monitoring"
   })
+  kms_key_name                = var.enable_soc2_compliance ? google_kms_crypto_key.soc2_key[0].id : ""
+  enable_confidential_compute = var.enable_soc2_compliance
+  enable_oslogin              = var.enable_soc2_compliance
 }
 
 # --- GitLab VM (Marketplace: GitLab CE on Ubuntu 22.04) ---
 module "gitlab_vm" {
   source = "./modules/compute_vm"
 
-  create_vm       = var.enable_gitlab_vm
+  create_vm       = var.enable_gitlab_vm && !var.enable_soc2_compliance
   name            = "gitlab-vm"
-  machine_type    = var.vm_types["gitlab"]
+  machine_type    = var.enable_soc2_compliance ? "n2d-standard-2" : var.vm_types["gitlab"]
   zone            = var.zone
   region          = var.region
   subnetwork_id   = module.vpc.subnetwork_id
@@ -116,6 +131,9 @@ module "gitlab_vm" {
     google-logging-enabled    = "true"
     google-monitoring-enabled = "true"
   }
+  kms_key_name                = var.enable_soc2_compliance ? google_kms_crypto_key.soc2_key[0].id : ""
+  enable_confidential_compute = var.enable_soc2_compliance
+  enable_oslogin              = var.enable_soc2_compliance
 }
 
 # --- GitLab Runner VM ---
@@ -124,7 +142,7 @@ module "gitlab_runner_vm" {
 
   create_vm       = var.enable_gitlab_runner_vm
   name            = "gitlab-runner-vm"
-  machine_type    = var.vm_types["gitlab_runner"]
+  machine_type    = var.enable_soc2_compliance ? "n2d-standard-2" : var.vm_types["gitlab_runner"]
   zone            = var.zone
   region          = var.region
   subnetwork_id   = module.vpc.subnetwork_id
@@ -135,5 +153,8 @@ module "gitlab_runner_vm" {
   labels = merge(local.common_labels, {
     role = "gitlab-runner"
   })
+  kms_key_name                = var.enable_soc2_compliance ? google_kms_crypto_key.soc2_key[0].id : ""
+  enable_confidential_compute = var.enable_soc2_compliance
+  enable_oslogin              = var.enable_soc2_compliance
 }
 
