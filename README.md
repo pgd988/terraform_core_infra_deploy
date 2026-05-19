@@ -32,7 +32,7 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - **Classic HTTPS Load Balancer** (`enable_lb`): Deploys a global load balancer with a static IP and self-signed SSL certificates.
 - **Network Endpoint Groups (NEG)**: All unmatched requests are routed to the NGINX Ingress controller via a dedicated NEG backend.
 - **Path/Host-based Routing** (`lb_paths.tf`): Centralized file for managing URL map routing rules and backend assignments. Includes dynamic host-based routing for ArgoCD (`acd.example.com`).
-- **VPC & Subnets**: Custom VPC and subnet configuration.
+- **VPC, Subnets & Cloud NAT**: Custom VPC and subnet configuration. Optional Cloud NAT (`enable_cloud_nat`) allows internal-only VMs to securely access the internet using a static external IP. Cloud NAT is automatically enabled when SOC2 compliance is active.
 - **Firewalls**: Configured for health checks, specific internal communication (e.g., allowing `10.0.0.0/8` to access database ports), and secure SSH access strictly via GCP Identity-Aware Proxy (IAP) (`35.235.240.0/20`).
 
 ### IAM & Security

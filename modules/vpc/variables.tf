@@ -13,3 +13,9 @@ variable "enable_flow_logs" {
   type        = bool
   default     = false
 }
+
+variable "enable_cloud_nat" {
+  description = "Enable Cloud NAT gateway"
+  type        = bool
+  default     = false
+}

@@ -64,6 +64,12 @@ variable "enable_soc2_compliance" {
   default     = false
 }
 
+variable "enable_cloud_nat" {
+  description = "Enable Cloud NAT gateway for outbound internet access from internal IPs."
+  type        = bool
+  default     = false
+}
+
 variable "argocd_git_repo_url" {
   description = "The Git repository URL for ArgoCD access (e.g., git@github.com:your-org/your-repo.git)"
   type        = string
