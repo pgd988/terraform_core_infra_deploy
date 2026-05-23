@@ -22,3 +22,13 @@ output "artifact_registry_id" {
   description = "The ID of the artifact registry repository"
   value       = google_artifact_registry_repository.gke_repo.id
 }
+
+output "default_log_bucket_id" {
+  description = "The ID of the default log bucket configuration"
+  value       = google_logging_project_bucket_config.default_bucket.id
+}
+
+output "active_log_exclusions" {
+  description = "Map of active log exclusion filters"
+  value       = { for k, v in google_logging_project_exclusion.exclusions : k => v.filter }
+}

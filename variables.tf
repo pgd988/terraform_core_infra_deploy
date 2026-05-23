@@ -234,3 +234,27 @@ variable "gke_apps_pool_max_count" {
   type    = number
   default = 5
 }
+
+# --- Logging & Monitoring Configuration ---
+
+variable "log_bucket_location" {
+  description = "The location of the default log bucket (e.g. global, us-central1)"
+  type        = string
+  default     = "global"
+}
+
+variable "log_bucket_retention_days" {
+  description = "The retention period in days for the default log bucket (minimum 1 day, up to 3650 days)"
+  type        = number
+  default     = 30
+}
+
+variable "log_exclusions" {
+  description = "A map of custom log exclusion configurations to cut unnecessary logs. These are merged automatically with the default system exclusions in logging.tf."
+  type = map(object({
+    description = optional(string)
+    filter      = string
+    disabled    = optional(bool, false)
+  }))
+  default = {}
+}

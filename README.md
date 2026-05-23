@@ -52,6 +52,29 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
   - **VPC Flow Logs & OS Login**: Automatically enables subnetwork flow logs (50% sample rate) and OS Login across all compute instances.
   - **External IP Restriction**: Safely skips the deployment of VMs requiring external IPs (App, Monitoring, GitLab) to comply with the `compute.vmExternalIpAccess` block policy.
 
+### Cloud Logging & Cost Control
+- **Default Log Bucket Configuration** (`log_bucket_location` & `log_bucket_retention_days`): Adopts and configures the default GCP logging bucket (`_Default`), allowing precise control over data storage duration (retention days) and physical storage location.
+- **Log Exclusions** (`log_exclusions`): Out-of-the-box support for custom log exclusions to filter out high-volume, low-value logs before ingestion, minimizing GCP Cloud Logging costs. Pre-configured exclusions include:
+  - **GKE Verbose Logs**: Filters out `INFO` and `DEBUG` level container logs.
+  - **Load Balancer Health Checks**: Excludes successful (`200 OK`) HTTP health check entries.
+  - **Compute Engine Verbose Logs**: Excludes VM system and agent logs below `WARNING` severity.
+
+#### Adding Custom Log Exclusions
+To add new exclusions or customize existing ones, define the `log_exclusions` map in your `terraform.tfvars` file.
+
+> [!NOTE]
+> Since the default system exclusions are defined in `logging.tf`, any custom exclusions defined in your `terraform.tfvars` map are automatically **merged** with the defaults. You do not need to repeat the defaults in your own configuration.
+
+```hcl
+log_exclusions = {
+  "exclude-app-polling-endpoint" = {
+    description = "Exclude highly frequent custom app polling/healthz endpoints"
+    filter      = "resource.type=\"k8s_container\" AND resource.labels.namespace_name=\"app-namespace\" AND textPayload =~ \"GET /healthz\""
+    disabled    = false
+  }
+}
+```
+
 ### Google Groups for RBAC — Setup Requirements
 
 The GKE cluster uses Google Groups to map RBAC policies to your organization's identity. For this to work:
@@ -90,8 +113,12 @@ The GKE cluster uses Google Groups to map RBAC policies to your organization's i
    # Two-step ArgoCD Git setup
    argocd_git_repo_url  = "git@github.com:your-org/your-repo.git"
    argocd_ssh_key_ready = false # Set to true ONLY after manually adding the key to Secret Manager
-   
    enable_app_vm = false
+   
+   # Cloud Logging & Cost Control Configuration
+   log_bucket_location       = "global"
+   log_bucket_retention_days = 30
+   
    # ... other configurations
    ```
 
@@ -118,6 +145,7 @@ The project follows a clean, modular architecture:
   - `gke.tf` / `gke_internals.tf` / `gke_helm.tf`: Kubernetes root configurations calling their respective modules.
   - `service_accounts.tf` / `providers.tf`: IAM, Providers, and Artifact Registry.
   - `compliance.tf`: Instantiates the Google Cloud SOC2 hardening blueprint.
+  - `logging.tf`: Adopts the default GCP logging bucket and sets custom cost-saving exclusions.
   - `kms.tf`: Provisions Customer-Managed Encryption Keys (CMEK) when SOC2 is enabled.
   - `outputs.tf`: Important output variables.
   
