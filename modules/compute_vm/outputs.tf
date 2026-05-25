@@ -12,3 +12,8 @@ output "external_ip" {
   description = "The external IP of the instance (if EXTERNAL_STATIC)"
   value       = var.create_vm && var.ip_type == "EXTERNAL_STATIC" ? google_compute_instance.vm[0].network_interface[0].access_config[0].nat_ip : null
 }
+
+output "self_link" {
+  description = "The self-link of the instance"
+  value       = var.create_vm ? google_compute_instance.vm[0].self_link : null
+}

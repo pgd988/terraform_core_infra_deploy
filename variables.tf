@@ -258,3 +258,15 @@ variable "log_exclusions" {
   }))
   default = {}
 }
+
+variable "rmq_admin_domain" {
+  description = "The domain name for the RabbitMQ Admin UI"
+  type        = string
+  default     = "rmq.example.com"
+}
+
+variable "rmq_admin_port" {
+  description = "The port used for the RabbitMQ Admin UI"
+  type        = number
+  default     = 15672
+}

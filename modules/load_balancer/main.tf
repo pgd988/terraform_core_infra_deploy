@@ -128,6 +128,35 @@ resource "google_compute_backend_service" "argocd_backend" {
   }
 }
 
+# --- RabbitMQ Admin Backend ---
+
+# HTTP Health Check for RabbitMQ Admin UI
+resource "google_compute_health_check" "rabbitmq_health_check" {
+  count              = var.create_lb && var.enable_rmq_vm ? 1 : 0
+  name               = "rabbitmq-admin-health-check"
+  check_interval_sec = 5
+  timeout_sec        = 5
+
+  http_health_check {
+    port = var.rmq_admin_port
+  }
+}
+
+# Backend Service for RabbitMQ Admin UI
+resource "google_compute_backend_service" "rabbitmq_backend" {
+  count                 = var.create_lb && var.enable_rmq_vm ? 1 : 0
+  name                  = "rabbitmq-backend-service"
+  protocol              = "HTTP"
+  port_name             = "http"
+  load_balancing_scheme = "EXTERNAL"
+  health_checks         = [google_compute_health_check.rabbitmq_health_check[0].id]
+
+  backend {
+    group          = var.rmq_instance_group
+    balancing_mode = "UTILIZATION"
+  }
+}
+
 # URL Map — routes all unmatched requests to the ingress-nginx backend and specific hosts to others
 resource "google_compute_url_map" "url_map" {
   count           = var.create_lb && var.enable_helm ? 1 : 0
@@ -147,6 +176,22 @@ resource "google_compute_url_map" "url_map" {
     content {
       name            = "argocd"
       default_service = google_compute_backend_service.argocd_backend[0].id
+    }
+  }
+
+  dynamic "host_rule" {
+    for_each = var.enable_rmq_vm ? [1] : []
+    content {
+      hosts        = [var.rmq_admin_domain]
+      path_matcher = "rabbitmq"
+    }
+  }
+
+  dynamic "path_matcher" {
+    for_each = var.enable_rmq_vm ? [1] : []
+    content {
+      name            = "rabbitmq"
+      default_service = google_compute_backend_service.rabbitmq_backend[0].id
     }
   }
 }

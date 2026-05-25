@@ -158,3 +158,21 @@ module "gitlab_runner_vm" {
   enable_oslogin              = var.enable_soc2_compliance
 }
 
+# --- Unmanaged Instance Group for RabbitMQ ---
+resource "google_compute_instance_group" "rabbitmq_production" {
+  count       = var.enable_rmq_vm ? 1 : 0
+  name        = "rabbitmq-production"
+  description = "Unmanaged instance group for RabbitMQ production instance"
+  zone        = var.zone
+
+  instances = [
+    module.rmq_vm.self_link
+  ]
+
+  named_port {
+    name = "http"
+    port = var.rmq_admin_port
+  }
+}
+
+

@@ -10,7 +10,7 @@ This project is feature-flag driven, allowing you to selectively deploy only the
 You can provision standalone VMs for various roles using the `enable_*_vm` variables. Each VM has customizable machine types and boot disk sizes:
 - **App VM** (`enable_app_vm`) - Application workloads (Static External IP).
 - **Database VM** (`enable_db_vm`) - Database hosting (Static Internal IP).
-- **RabbitMQ VM** (`enable_rmq_vm`) - Message broker (Static Internal IP).
+- **RabbitMQ VM** (`enable_rmq_vm`) - Message broker (Static Internal IP). Its admin UI is automatically placed into an Unmanaged Instance Group (`rabbitmq-production`) and exposed via the Global HTTPS Load Balancer.
 - **Redis VM** (`enable_redis_vm`) - In-memory cache (Ephemeral Internal IP).
 - **Monitoring VM** (`enable_monitoring_vm`) - Observability stack (Static External IP).
 - **GitLab VM** (`enable_gitlab_vm`) - Code hosting and CI/CD (Static External IP). Deployed from the [GCP Marketplace GitLab CE image](https://console.cloud.google.com/marketplace/product/cloud-infrastructure-services/gitlab-ce-ubuntu-22-04) (Ubuntu 22.04, SSD boot disk). Recommended machine type: `e2-standard-4` (4 vCPU, 16 GB RAM).
@@ -31,7 +31,7 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 ### Load Balancing & Networking
 - **Classic HTTPS Load Balancer** (`enable_lb`): Deploys a global load balancer with a static IP and self-signed SSL certificates.
 - **Network Endpoint Groups (NEG)**: All unmatched requests are routed to the NGINX Ingress controller via a dedicated NEG backend.
-- **Path/Host-based Routing** (`lb_paths.tf`): Centralized file for managing URL map routing rules and backend assignments. Includes dynamic host-based routing for ArgoCD (`acd.example.com`).
+- **Path/Host-based Routing**: Centralized manage-by-URL map routing rules and backend assignments. Includes dynamic host-based routing for ArgoCD (`acd.example.com`) and the RabbitMQ Admin UI (configurable via `rmq_admin_domain`).
 - **VPC, Subnets & Cloud NAT**: Custom VPC and subnet configuration. Optional Cloud NAT (`enable_cloud_nat`) allows internal-only VMs to securely access the internet using a static external IP. Cloud NAT is automatically enabled when SOC2 compliance is active.
 - **Firewalls**: Configured for health checks, specific internal communication (e.g., allowing `10.0.0.0/8` to access database ports), and secure SSH access strictly via GCP Identity-Aware Proxy (IAP) (`35.235.240.0/20`).
 
