@@ -21,6 +21,7 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - **Workload Identity** (`enable_workload_identity`): Toggles Workload Identity on the GKE cluster and node pools, allowing Kubernetes service accounts to securely authenticate to Google Cloud APIs.
 - **Internal Resources** (`enable_gke_internals`): Deploys internal Kubernetes resources such as namespaces (`app_namespace`).
 - **Helm Deployments** (`enable_helm`): Conditionally deploys Helm charts to the cluster. Currently configured to deploy an `ingress-nginx-default` chart (with a dynamic config-reloader sidecar).
+- **Kyverno Policy Engine** (`enable_kyverno`): Installs Kyverno and default cluster policies (requiring resource limits, disallowing root, and disallowing the `latest` image tag). It operates in `kyverno_mode` (defaults to audit) and can be toggled via the environment variable `TF_VAR_enable_kyverno=true`.
 - **ArgoCD & Argo Rollouts** (`enable_argocd`): Deploys ArgoCD (from local chart) and Argo Rollouts (from remote chart) into their respective namespaces. Configures a standalone NEG for the ArgoCD server.
 - **ArgoCD Git Credentials & Bootstrap** (`argocd_ssh_key_ready` & `argocd_git_repo_url`): Employs a secure two-step process using GCP Secret Manager to inject SSH repository credentials into ArgoCD. Once the keys are ready, it dynamically templates and deploys a Helm post-install hook to initialize the root "App of Apps" bootstrap Application.
 - **Cluster Infra Management** (`cluster-infra-mgmt` Helm chart): Deploys cluster-internal resources including network policies, RBAC roles, and bindings.
@@ -142,7 +143,7 @@ The project follows a clean, modular architecture:
   - `network.tf`: Instantiates the `vpc` and `firewall` modules.
   - `load_balancer.tf`: Instantiates the `load_balancer` module.
   - `vms.tf`: Standalone compute instance definitions (calling `compute_vm` module).
-  - `gke.tf` / `gke_internals.tf` / `gke_helm.tf`: Kubernetes root configurations calling their respective modules.
+  - `gke.tf` / `gke_internals.tf` / `gke_helm.tf` / `kyverno.tf`: Kubernetes root configurations calling their respective modules.
   - `service_accounts.tf` / `providers.tf`: IAM, Providers, and Artifact Registry.
   - `compliance.tf`: Instantiates the Google Cloud SOC2 hardening blueprint.
   - `logging.tf`: Adopts the default GCP logging bucket and sets custom cost-saving exclusions.
@@ -156,6 +157,7 @@ The project follows a clean, modular architecture:
   - `gke_cluster`: Regional GKE cluster and node pool definitions.
   - `gke_internals`: Cluster internal resources (Namespaces, Services, Secrets).
   - `gke_helm`: Helm chart deployments (Nginx Ingress, ArgoCD, etc.).
+  - `kyverno`: Deploys the Kyverno policy engine and custom baseline policies.
   - `compute_vm`: Standardized Compute Engine instance definition.
 
 - **Helm Charts (`helm/`):**

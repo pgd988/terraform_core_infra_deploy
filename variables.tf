@@ -270,3 +270,17 @@ variable "rmq_admin_port" {
   type        = number
   default     = 15672
 }
+
+# --- Kyverno ---
+
+variable "enable_kyverno" {
+  description = "Enable the Kyverno policy engine"
+  type        = bool
+  default     = false
+}
+
+variable "kyverno_mode" {
+  description = "Validation failure action for Kyverno policies (audit or enforce)"
+  type        = string
+  default     = "audit"
+}
