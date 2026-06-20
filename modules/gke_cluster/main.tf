@@ -45,6 +45,15 @@ resource "google_container_cluster" "primary" {
       workload_pool = "${var.project_id}.svc.id.goog"
     }
   }
+
+  datapath_provider = "ADVANCED_DATAPATH"
+
+  monitoring_config {
+    advanced_datapath_observability_config {
+      enable_metrics = true
+      enable_relay   = true
+    }
+  }
 }
 
 resource "google_container_node_pool" "default_pool" {
