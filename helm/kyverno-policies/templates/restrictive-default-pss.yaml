@@ -1,22 +1,66 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: enforce-restricted-pss
+  name: restricted-app-workloads
   annotations:
-    policies.kyverno.io/title: Restricted Pod Security Standards
+    policies.kyverno.io/title: Restricted Pod Security Standard
     policies.kyverno.io/category: Pod Security
     policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod
 spec:
   validationFailureAction: Enforce
   background: true
+  failurePolicy: Fail
 
   rules:
-    - name: restricted
+    - name: enforce-restricted-pss
       match:
         any:
           - resources:
               kinds:
                 - Pod
+
+      exclude:
+        any:
+          # Core Kubernetes components
+          - resources:
+              namespaces:
+                - kube-system
+                - kube-node-lease
+                - kube-public
+
+          # Common CNI namespaces
+          - resources:
+              namespaces:
+                - calico-system
+                - cilium-system
+                - tigera-operator
+                - kube-flannel
+                - antrea
+                - weave
+
+          # Common CSI/storage namespaces
+          - resources:
+              namespaces:
+                - longhorn-system
+                - rook-ceph
+                - openebs
+                - trident
+                - storage-system
+
+          # Service mesh namespaces
+          - resources:
+              namespaces:
+                - istio-system
+                - linkerd
+                - consul
+
+          # Monitoring / logging
+          - resources:
+              namespaces:
+                - monitoring
+                - observability
+                - logging
 
       validate:
         podSecurity:

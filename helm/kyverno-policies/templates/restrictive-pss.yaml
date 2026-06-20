@@ -13,6 +13,16 @@ spec:
           - resources:
               kinds:
                 - Pod
+#  rules:
+#    - name: restricted
+#      match:
+#        any:
+#          - resources:
+#              kinds:
+#                - Pod
+#              namespaceSelector:
+#               matchLabels:
+#                  pod-security: restricted
 
       validate:
         podSecurity:
