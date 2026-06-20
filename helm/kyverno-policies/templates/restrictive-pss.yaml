@@ -4,6 +4,7 @@ metadata:
   name: restricted-with-exceptions
 spec:
   validationFailureAction: Enforce
+#  validationFailureAction: Audit
   background: true
 
   rules:

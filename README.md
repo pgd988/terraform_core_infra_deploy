@@ -21,7 +21,11 @@ You can provision standalone VMs for various roles using the `enable_*_vm` varia
 - **Workload Identity** (`enable_workload_identity`): Toggles Workload Identity on the GKE cluster and node pools, allowing Kubernetes service accounts to securely authenticate to Google Cloud APIs.
 - **Internal Resources** (`enable_gke_internals`): Deploys internal Kubernetes resources such as namespaces (`app_namespace`).
 - **Helm Deployments** (`enable_helm`): Conditionally deploys Helm charts to the cluster. Currently configured to deploy an `ingress-nginx-default` chart (with a dynamic config-reloader sidecar).
-- **Kyverno Policy Engine** (`enable_kyverno`): Installs Kyverno and default cluster policies (requiring resource limits, disallowing root, and disallowing the `latest` image tag). It operates in `kyverno_mode` (defaults to audit) and can be toggled via the environment variable `TF_VAR_enable_kyverno=true`.
+- **Kyverno Policy Engine** (`enable_kyverno`): Installs Kyverno and default cluster policies (requiring resource limits, disallowing root, disallowing the `latest` image tag, and other Pod Security Standards (PSS) policies). It operates in `kyverno_mode` (defaults to audit) and can be toggled via the environment variable `TF_VAR_enable_kyverno=true`. To view policy reports and violations, run:
+  ```bash
+  kubectl get policyreports -A
+  kubectl get clusterpolicyreports
+  ```
 - **ArgoCD & Argo Rollouts** (`enable_argocd`): Deploys ArgoCD (from local chart) and Argo Rollouts (from remote chart) into their respective namespaces. Configures a standalone NEG for the ArgoCD server.
 - **ArgoCD Git Credentials & Bootstrap** (`argocd_ssh_key_ready` & `argocd_git_repo_url`): Employs a secure two-step process using GCP Secret Manager to inject SSH repository credentials into ArgoCD. Once the keys are ready, it dynamically templates and deploys a Helm post-install hook to initialize the root "App of Apps" bootstrap Application.
 - **Cluster Infra Management** (`cluster-infra-mgmt` Helm chart): Deploys cluster-internal resources including network policies, RBAC roles, and bindings.
